@@ -36,3 +36,7 @@ docs/_includes/sorries.md
 *.synctex.gz
 *.synctex.gz(busy)
 *.pdfsync
+
+*.bak
+blueprint/ProofsfromTHEBOOK.pdf
+work/

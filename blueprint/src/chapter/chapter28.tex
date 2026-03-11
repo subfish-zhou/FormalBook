@@ -1,18 +1,134 @@
 \chapter{Pigeon-hole and double counting}
 \label{chapter28}
-\begin{theorem}[Pigeon-hole princinple]
+
+Some mathematical principles, such as the two in the title of this chapter,
+are so obvious that you might think they would only produce equally
+obvious results. To convince you that ``It ain't necessarily so'' we
+illustrate them with examples that were suggested by Paul Erd\H{o}s to be
+included in The Book. We will encounter instances of them also in later
+chapters.
+
+\begin{theorem}[Pigeon-hole principle]
   \label{pigeon_hole_principle}
-  \lean{chapter28.pigeon_hole_principle}
+  \lean{chapter28.pigeon\_hole\_principle}
   If $n$ objects are placed in $r$ boxes, where $r < n$, then at least one of the boxes contains
   more than one object.
 \end{theorem}
+
+Well, this is indeed obvious, there is nothing to prove. In the language of
+mappings our principle reads as follows: Let $N$ and $R$ be two finite sets
+with $|N| = n > r = |R|$, and let $f : N \to R$ be a mapping. Then there
+exists some $a \in R$ with $|f^{-1}(a)| \geq 2$. We may even state a stronger
+inequality: There exists some $a \in R$ with
+\[
+|f^{-1}(a)| \geq \left\lceil \frac{n}{r} \right\rceil. \tag{1}
+\]
+In fact, otherwise we would have $|f^{-1}(a)| < \frac{n}{r}$ for all $a$, and hence
+$n = \sum_{a \in R} |f^{-1}(a)| < r \cdot \frac{n}{r} = n$, which cannot be.
+
 \begin{proof}
   \leanok
-  obvious
+  Obvious.
 \end{proof}
+
+\section{Numbers}
+
+\begin{theorem}[Claim]
+  \label{ch28claim1}
+  \lean{chapter28.claim1\_coprime}
+  Consider the numbers $1, 2, 3, \dots, 2n$, and take any $n + 1$
+  of them. Then there are two among these $n + 1$ numbers which are
+  relatively prime.
+\end{theorem}
+\begin{proof}
+  \leanok
+  \uses{pigeon_hole_principle}
+  This is again obvious. There must be two numbers which are only $1$ apart,
+  and hence relatively prime.
+\end{proof}
+
+But let us now turn the condition around.
+
+\begin{theorem}[Claim]
+  \label{ch28claim2}
+  \lean{chapter28.claim2\_divisible}
+  Suppose again $A \subset \{1, 2, \dots, 2n\}$ with $|A| = n+1$. Then
+  there are always two numbers in $A$ such that one divides the other.
+\end{theorem}
+\begin{proof}
+  \leanok
+  \uses{pigeon_hole_principle}
+  Write every number $a \in A$ in the form $a = 2^k m$, where $m$ is an odd number between $1$
+  and $2n - 1$. Since there are $n + 1$ numbers in $A$, but only $n$ different odd parts, there must
+  be two numbers in $A$ with the same odd part. Hence one is a multiple of the other.
+\end{proof}
+
+\section{Sequences}
+
+\begin{theorem}[Claim (Erd\H{o}s--Szekeres)]
+  \label{ch28claim3}
+  \lean{chapter28.claim3\_erdos\_szekeres}
+  In any sequence $a_1, a_2, \ldots, a_{mn+1}$ of $mn+1$ distinct real numbers,
+  there exists an increasing subsequence
+  \[
+  a_{i_1} < a_{i_2} < \cdots < a_{i_{m+1}} \quad (i_1 < i_2 < \cdots < i_{m+1})
+  \]
+  of length $m+1$, or a decreasing subsequence
+  \[
+  a_{j_1} > a_{j_2} > \cdots > a_{j_{n+1}} \quad (j_1 < j_2 < \cdots < j_{n+1})
+  \]
+  of length $n+1$, or both.
+\end{theorem}
+\begin{proof}
+  \leanok
+  \uses{pigeon_hole_principle}
+  This time the application of the pigeon-hole principle is not immediate.
+  Associate to each $a_i$ the number $t_i$, which is the length of a longest
+  increasing subsequence starting at $a_i$. If $t_i \geq m+1$ for some $i$,
+  then we have an increasing subsequence of length $m+1$. Suppose then
+  that $t_i \leq m$ for all $i$. The function $f : a_i \mapsto t_i$ mapping
+  $\{a_1, \dots, a_{mn+1}\}$ to $\{1, \dots, m\}$ tells us by~(1) that there
+  is some $s \in \{1, \dots, m\}$ such that $f(a_i) = s$ for $\frac{mn}{m} + 1 = n + 1$
+  numbers $a_i$. Let $a_{j_1}, a_{j_2}, \dots, a_{j_{n+1}}$ $(j_1 < \cdots < j_{n+1})$
+  be these numbers. Now look at two consecutive numbers $a_{j_i}, a_{j_{i+1}}$. If
+  $a_{j_i} < a_{j_{i+1}}$, then we would obtain an increasing subsequence of length
+  $s$ starting at $a_{j_{i+1}}$, and consequently an increasing subsequence of length
+  $s+1$ starting at $a_{j_i}$, which cannot be since $f(a_{j_i}) = s$.
+  We thus obtain a decreasing subsequence $a_{j_1} > a_{j_2} > \cdots > a_{j_{n+1}}$
+  of length $n+1$.
+\end{proof}
+
+\section{Sums}
+
+\begin{theorem}[Claim]
+  \label{ch28claim4}
+  \lean{chapter28.claim4\_contiguous\_sum}
+  Suppose we are given $n$ integers $a_1, \dots, a_n$, which need not be distinct.
+  Then there is always a set of consecutive numbers $a_{k+1}, a_{k+2}, \dots, a_{\ell}$
+  whose sum $\sum_{i=k+1}^{\ell} a_i$ is a multiple of $n$.
+\end{theorem}
+\begin{proof}
+  \leanok
+  \uses{pigeon_hole_principle}
+  For the proof we set $N = \{0, 1, \dots, n\}$ and $R = \{0, 1, \dots, n-1\}$.
+  Consider the map $f : N \to R$, where $f(m)$ is the remainder of $a_1 + \cdots + a_m$
+  upon division by $n$. Since $|N| = n+1 > n = |R|$,
+  it follows that there are two sums $a_1 + \cdots + a_k, a_1 + \cdots + a_{\ell}$ $(k < \ell)$
+  with the same remainder, where the first sum may be the empty sum denoted by $0$. It follows that
+  \[
+  \sum_{i=k+1}^{\ell} a_i = \sum_{i=1}^{\ell} a_i - \sum_{i=1}^{k} a_i
+  \]
+  has remainder $0$ --- end of proof.
+\end{proof}
+
+\bigskip
+
+Let us turn to the second principle: counting in two ways. By this we mean
+the following.
 
 \begin{theorem}[Double counting]
   \label{double_counting}
+  \lean{chapter28.double\_counting}
   Suppose that we are given two finite sets $R$ and $C$ and a subset $S \subseteq R \times C$.
   Whenever $(p, q) \in S$, then we say $p$ and $q$ are incident.
   If $r_p$ denotes the number of elements that are incident to $p \in R$, and $c_q$
@@ -22,90 +138,76 @@
   \]
 \end{theorem}
 \begin{proof}
-  ``nothing to prove''
+  \leanok
+  Again, there is nothing to prove. The first sum classifies the pairs in $S$
+  according to the first entry, while the second sum classifies the same pairs
+  according to the second entry.
 \end{proof}
 
-\section{Numbers}
-\begin{theorem}[Claim]
-  \label{ch28claim1}
-  Consider the numbers $1, 2, 3, \dots 2n$, and take away $n + 1$
-  of them. Then there are two among these $n + 1$ numbers which are
-  relatively prime.
-\end{theorem}
-\begin{proof}
-  \uses{chapter28.pigeon_hole_principle}
-  obvious
-\end{proof}
-
-\begin{theorem}[Claim]
-  \label{ch28claim2}
-  Suppose again $A\subset\{1, 2, \dots, 2n\}$ with $|A| = n + 1$. Then
-  there are always two numbers in $A$ such that one divides the other.
-\end{theorem}
-\begin{proof}
-  \uses{chapter28.pigeon_hole_principle}
-  Write every number $a \in A$ in the form $a = 2^k m$, where $m$ is an odd number between $1$
-  and $2n - 1$. Since there are $n + 1$ numbers in $A$, but only $n$ different odd parts, there must
-  be two numbers in $A$ with the same odd part. Hence one is a multiple of the other.
-\end{proof}
-
-\section{Sequences}
-
-\begin{theorem}[Claim]
-  \label{ch28claim3}
-  In any sequence $a_1, a_2, \ldots, a_{mn+1}$ of $mn+1$ distinct real numbers, there exists an increasing subsequence
+There is a useful way to picture the set $S$. Consider the matrix $A = (a_{pq})$,
+the incidence matrix of $S$, where the rows and columns of $A$ are indexed
+by the elements of $R$ and $C$, respectively, with
 \[
-a_{i_1} < a_{i_2} < \cdots < a_{i_{m+1}} \quad (i_1 < i_2 < \cdots < i_{m+1})
+a_{pq} = \begin{cases} 1 & \text{if } (p, q) \in S, \\ 0 & \text{if } (p, q) \notin S. \end{cases}
 \]
-of length $m+1$, or a decreasing subsequence
-\[
-a_{j_1} > a_{j_2} > \cdots > a_{j_{n+1}} \quad (j_1 < j_2 < \cdots < j_{n+1})
-\]
-of length $n+1$, or both.
-\end{theorem}
-\begin{proof}
-  \uses{chapter28.pigeon_hole_principle}
-This time the application of the pigeon-hole principle is not immediate.
-Associate to each $a_i$ the number $t_i$, which is the length of a longest
-increasing subsequence starting at $a_i$. If $t_i \geq m+1$ for some $i$,
-then we have an increasing subsequence of length $m+1$. Suppose then
-that $t_i \leq m$ for all $i$. The function $f : a_i \mapsto t_i$ mapping
-$\{a_1, \dots, a_{mn+1}\}$ to $\{1, \dots, m\}$ tells us by (1) that there
-is some $s \in \{1, \dots, m\}$ such that $f(a_i) = s$ for $\frac{mn}{m} + 1 = n + 1$
-numbers $a_i$. Let $a_{j_1}, a_{j_2}, \dots, a_{j_{n+1}}$ $(j_1 < \cdots < j_{n+1})$
-be these numbers. Now look at two consecutive numbers $a_{j_i} < a_{j_{i+1}}$,
-then we would obtain an increasing subsequence of length $s$ starting
-at $a_{j_{i+1}}$, and consequently an increasing subsequence of length $s+1$
-starting at $a_{j_i}$, which cannot be since $f(a_{j_i}) = s$.
-We thus obtain a decreasing subsequence $a_{j_1} > a_{j_2} > \cdots > a_{j_{n+1}}$
-of length $n+1$.
-\end{proof}
-
-\section{Sums}
-
-\begin{theorem}[Claim]
-  \label{ch28claim4}
-  Suppose we are given $n$ integers $a_1, \dots, a_n$, which need not be distinct.
-  Then there is always a set of consecutive numbers $a_{k+1}, a_{k+2}, \dots, a_{\ell}$
-  whose sum $\sum_{i=k+1}^{\ell} a_i$ is a multiple of $n$.
-\end{theorem}
-\begin{proof}
-  \uses{chapter28.pigeon_hole_principle}
-  For the proof we set $N = \{0, 1, \dots, n\}$ and $R = \{0, 1, \dots, n-1\}$.
-  Consider the map $f : N \to R$, where $f(m)$ is the remainder of $a_1 + \cdots + a_m$
-  upon division by $n$. Since $|N| = n+1 > n = |R|$,
-  it follows that there are two sums $a_1 + \cdots + a_k, a_1 + \cdots + a_{\ell}$ $(k < \ell)$
-  with the same remainder, where the first sum may be the empty sum denoted by $0$. It follows that
-  \[
-  \sum_{i=k+1}^{\ell} a_i = \sum_{i=1}^{\ell} a_i - \sum_{i=1}^{k} a_i
-  \]
-  has remainder 0 — end of proof.
-\end{proof}
+With this set-up, $r_p$ is the sum of the $p$-th row of $A$ and $c_q$ is the sum of the
+$q$-th column. Hence the first sum in~(3) adds the entries of $A$ (that is, counts
+the elements in $S$) by rows, and the second sum by columns.
 
 \section{Numbers again}
- TODO
+
+Look at the incidence matrix for $R = C = \{1, 2, \dots, n\}$ and $S = \{(i,j) : i \mid j\}$.
+The number of $1$'s in column $j$ is precisely the number of divisors of $j$; let us
+denote this number by $t(j)$. Let us ask how large this number $t(j)$ is on the average
+when $j$ ranges from $1$ to $n$. Thus, we ask for the quantity
+\[
+\bar{t}(n) = \frac{1}{n} \sum_{j=1}^{n} t(j).
+\]
+
+How large is $\bar{t}(n)$ for arbitrary $n$? At first glance, this seems hopeless. For
+prime numbers $p$ we have $t(p) = 2$, while for $2^k$ we obtain a large number
+$t(2^k) = k + 1$. So, $t(n)$ is a wildly jumping function, and we surmise that
+the same is true for $\bar{t}(n)$. Wrong guess, the opposite is true! Counting in
+two ways provides an unexpected and simple answer.
+
+\begin{theorem}[Average number of divisors]
+  \label{ch28_avg_divisors}
+  \lean{chapter28.sum\_divisor\_count}
+  For any positive integer $n$,
+  \[
+  \sum_{j=1}^{n} t(j) = \sum_{i=1}^{n} \left\lfloor \frac{n}{i} \right\rfloor.
+  \]
+  Consequently,
+  \[
+  \log n - 1 < \bar{t}(n) \leq H_n < \log n + 1,
+  \]
+  where $H_n = \sum_{i=1}^{n} \frac{1}{i}$ is the $n$-th harmonic number.
+\end{theorem}
+\begin{proof}
+  \uses{double_counting}
+  Consider the matrix $A$ (as above) for the integers $1$ up to $n$. Counting by
+  columns we get $\sum_{j=1}^{n} t(j)$. How many $1$'s are in row $i$? Easy enough, the
+  $1$'s correspond to the multiples of $i$: $1 \cdot i, 2 \cdot i, \dots$, and the last multiple not
+  exceeding $n$ is $\lfloor n/i \rfloor \cdot i$. Hence we obtain
+  \[
+  \bar{t}(n) = \frac{1}{n} \sum_{j=1}^{n} t(j) = \frac{1}{n} \sum_{i=1}^{n} \left\lfloor \frac{n}{i} \right\rfloor
+  \leq \frac{1}{n} \sum_{i=1}^{n} \frac{n}{i} = \sum_{i=1}^{n} \frac{1}{i} = H_n,
+  \]
+  where the error in each summand, when passing from $\lfloor n/i \rfloor$ to $n/i$, is less
+  than $1$. Together with the standard estimates $\log n < H_n < \log n + 1$
+  this gives $\log n - 1 < \bar{t}(n) \leq H_n < \log n + 1$.
+
+  Thus we have proved the remarkable result that, while $t(n)$ is totally erratic,
+  the average $\bar{t}(n)$ behaves beautifully: It differs from $\log n$ by less than $1$.
+\end{proof}
 
 \section{Graphs}
+
+Let $G$ be a finite simple graph with vertex set $V$ and edge set $E$. The
+degree $d(v)$ of a vertex $v$ is the number of edges which have $v$ as an
+end-vertex.
+
+Almost every book in graph theory starts with the following result:
 
 \begin{lemma}[Handshaking]
   \label{handshaking}
@@ -114,56 +216,193 @@ of length $n+1$.
   Let $G$ be a finite simple graph with vertex set $V$ and edge set $E$ and let
   $d(v)$ denote the degree of a vertex $v$. Then
   \[
-  \sum_{v\in V}d(v) = 2|E|.
+  \sum_{v\in V}d(v) = 2|E|. \tag{4}
   \]
 \end{lemma}
 \begin{proof}
-\leanok
-For the proof consider $S \subseteq V \times E$, where $S$ is
-the set of pairs $(v, e)$ such that $v \in V$ is an end-vertex
-of $e \in E$. Counting $S$ in two ways gives on the one hand
-$\sum_{v \in V} d(v)$, since every vertex contributes $d(v)$
-to the count, and on the other hand $2|E|$, since every edge
-has two ends.
+  \leanok
+  For the proof consider $S \subseteq V \times E$, where $S$ is
+  the set of pairs $(v, e)$ such that $v \in V$ is an end-vertex
+  of $e \in E$. Counting $S$ in two ways gives on the one hand
+  $\sum_{v \in V} d(v)$, since every vertex contributes $d(v)$
+  to the count, and on the other hand $2|E|$, since every edge
+  has two ends.
 \end{proof}
 
-\begin{theorem}
+We want to single out the following beautiful application to an extremal problem
+on graphs. Here is the problem:
+\begin{quote}
+Suppose $G = (V, E)$ has $n$ vertices and contains no cycle of length $4$ (denoted by $C_4$).
+How many edges can $G$ have at most?
+\end{quote}
+
+Let us tackle the general problem. Let $G$ be a graph on $n$ vertices without
+a $4$-cycle. We count the following set $S$ in two ways: $S$ is the set of pairs
+$(u, \{v, w\})$ where $u$ is adjacent to $v$ and to $w$, with $v \neq w$.
+In other words, we count all occurrences of a ``cherry'' (path of length~$2$ centered at~$u$).
+
+Summing over $u$, we find $|S| = \sum_{u \in V} \binom{d(u)}{2}$. On the other hand,
+every pair $\{v, w\}$ has at most one common neighbor (by the $C_4$-condition).
+Hence $|S| \leq \binom{n}{2}$, and we conclude
+\[
+\sum_{u \in V} \binom{d(u)}{2} \leq \binom{n}{2}
+\]
+or
+\[
+\sum_{u \in V} d(u)^2 \leq n(n-1) + \sum_{u \in V} d(u). \tag{5}
+\]
+
+Next we apply the Cauchy--Schwarz inequality to the vectors $(d(u_1), \dots, d(u_n))$
+and $(1, 1, \dots, 1)$, obtaining
+\[
+\left(\sum_{u \in V} d(u)\right)^2 \leq n \sum_{u \in V} d(u)^2,
+\]
+and hence by~(5)
+\[
+\left(\sum_{u \in V} d(u)\right)^2 \leq n^2(n-1) + n \sum_{u \in V} d(u).
+\]
+Invoking~(4) we find
+\[
+4|E|^2 \leq n^2(n-1) + 2n|E|
+\]
+or
+\[
+|E|^2 - \frac{n}{2}|E| - \frac{n^2(n-1)}{4} \leq 0.
+\]
+Solving the corresponding quadratic equation we thus obtain the following
+result of Istv\'an Reiman.
+
+\begin{theorem}[Reiman]
   \label{ch28theorem}
+  \lean{chapter28.c4\_free\_edge\_bound}
   If the graph $G$ on $n$ vertices contains no $4$-cycles, then
   \[
-  |E| \le \lfloor\frac{n}{4}(1 + \sqrt{4n - 3})\rfloor
+  |E| \leq \left\lfloor \frac{n}{4}\left(1 + \sqrt{4n - 3}\right) \right\rfloor. \tag{6}
   \]
 \end{theorem}
 \begin{proof}
+  \uses{double_counting, handshaking}
+  The proof follows from the chain of inequalities above: the key combinatorial
+  step $\sum \binom{d(u)}{2} \leq \binom{n}{2}$ is established by double counting
+  (Theorem~\ref{ch28_sum_choose}), and the final bound follows by
+  Cauchy--Schwarz and the quadratic formula.
+\end{proof}
+
+\begin{theorem}[Cherry counting]
+  \label{ch28_sum_choose}
+  \lean{chapter28.sum\_choose\_deg\_le\_choose\_card}
+  \leanok
+  If the graph $G$ on $n$ vertices contains no $4$-cycles, then
+  \[
+  \sum_{v \in V} \binom{d(v)}{2} \leq \binom{n}{2}.
+  \]
+\end{theorem}
+\begin{proof}
+  \leanok
   \uses{double_counting}
-  TODO
+  Each pair $(v, \{u, w\})$ with $u, w \in N(v)$ maps to $\{u, w\}$. The $C_4$-free
+  condition ensures this map is injective on the second component: if both $v_1$
+  and $v_2$ are common neighbors of $\{u, w\}$ with $v_1 \neq v_2$, then
+  $v_1$-$u$-$v_2$-$w$ forms a $4$-cycle, a contradiction.
 \end{proof}
 
 \section{Sperner's Lemma}
+
+In 1912, Luitzen Brouwer published his famous fixed point theorem:
+\begin{quote}
+\emph{Every continuous function $f : B^n \to B^n$ of an $n$-dimensional ball to
+itself has a fixed point (a point $x \in B^n$ with $f(x) = x$).}
+\end{quote}
+For dimension $1$, that is for an interval, this follows easily from the intermediate
+value theorem, but for higher dimensions Brouwer's proof needed some sophisticated
+machinery. It was therefore quite a surprise when in 1928 young Emanuel Sperner
+produced a simple combinatorial result from which both Brouwer's fixed point theorem
+and the invariance of the dimension under continuous bijective maps could be deduced.
+And what's more, Sperner's ingenious lemma is matched by an equally beautiful proof
+--- it is just double counting.
+
+We discuss Sperner's lemma, and Brouwer's theorem as a consequence, for
+the first interesting case, that of dimension $n = 2$.
+
 \begin{lemma}[Sperner's Lemma]
   \label{sperner}
-  Suppose that some “big” triangle with vertices $V_1, V_2, V_3$ is triangulated (that is, decomposed into a finite number of “small” triangles that fit together edge-by-edge).
-Assume that the vertices in the triangulation get “colors” from the set $\{1, 2, 3\}$ such that $V_i$ receives the color $i$ (for each $i$), and only the colors $i$ and $j$ are used for vertices along the edge from $V_i$ to $V_j$ (for $i \neq j$), while the interior vertices are colored arbitrarily with 1, 2, or 3.
-Then in the triangulation there must be a small “tricolored” triangle, which has all three different vertex colors.
+  \lean{chapter28.sperner\_lemma}
+  Suppose that some ``big'' triangle with vertices $V_1, V_2, V_3$ is triangulated
+  (that is, decomposed into a finite number of ``small'' triangles that fit together edge-by-edge).
+  Assume that the vertices in the triangulation get ``colors'' from the set $\{1, 2, 3\}$ such that
+  $V_i$ receives the color $i$ (for each $i$), and only the colors $i$ and $j$ are used for vertices
+  along the edge from $V_i$ to $V_j$ (for $i \neq j$), while the interior vertices are colored
+  arbitrarily with $1$, $2$, or $3$.
+  Then in the triangulation there must be a small ``tricolored'' triangle, which has all three
+  different vertex colors.
 \end{lemma}
 \begin{proof}
-  \uses{chapter28.pigeon_hole_principle}
+  \uses{handshaking}
   We will prove a stronger statement: The number of tricolored triangles is not only nonzero,
   it is always \emph{odd}.
 
-Consider the dual graph to the triangulation, but don’t take all its edges — only those which cross an edge that has endvertices with the (different) colors 1 and 2. Thus we get a “partial dual graph” which has degree 1 at all vertices that correspond to tricolored triangles, degree 2 for all triangles in which the two colors 1 and 2 appear, and degree 0 for triangles that do not have both colors 1 and 2. Thus only the tricolored triangles correspond to vertices of odd degree (of degree 1).
+  Consider the dual graph to the triangulation, but don't take all its edges
+  --- only those which cross an edge that has endvertices with the (different)
+  colors $1$ and $2$. Thus we get a ``partial dual graph'' which has degree $1$ at all
+  vertices that correspond to tricolored triangles, degree $2$ for all triangles in
+  which the two colors $1$ and $2$ appear, and degree $0$ for triangles that do not
+  have both colors $1$ and $2$. Thus only the tricolored triangles correspond to
+  vertices of odd degree (of degree $1$).
 
-However, the vertex of the dual graph which corresponds to the outside of the triangulation has odd degree: in fact, along the big edge from $V_1$ to $V_2$, there is an odd number of changes between 1 and 2. Thus an odd number of edges of the partial dual graph crosses this big edge, while the other big edges cannot have both 1 and 2 occurring as colors.
+  However, the vertex of the dual graph which corresponds to the outside of
+  the triangulation has odd degree: in fact, along the big edge from $V_1$ to $V_2$,
+  there is an odd number of changes between $1$ and $2$. Thus an odd number
+  of edges of the partial dual graph crosses this big edge, while the other big
+  edges cannot have both $1$ and $2$ occurring as colors.
 
-Now since the number of odd-degree vertices in any finite graph is even (by equation (4)), we find that the number of small triangles with three different colors (corresponding to odd inside vertices of our dual graph) is odd.
+  Now since the number of odd-degree vertices in any finite graph is even (by
+  equation~(4)), we find that the number of small triangles with three different
+  colors (corresponding to odd inside vertices of our dual graph) is odd.
 \end{proof}
 
-\begin{theorem}[Brower's Fixpoint (for $n=2$)]
-  \label{brower}
-  Every continuous function $f : B^2 \longrightarrow B^2$ of an $2$-dimensional ball to
+With this lemma, it is easy to derive Brouwer's theorem.
+
+\begin{theorem}[Brouwer's Fixed Point Theorem (for $n = 2$)]
+  \label{brouwer}
+  \lean{chapter28.brouwer\_fixed\_point\_2d}
+  Every continuous function $f : B^2 \to B^2$ of a $2$-dimensional ball to
   itself has a fixed point (a point $x \in B^2$ with $f(x) = x$).
 \end{theorem}
 \begin{proof}
   \uses{sperner}
-  TODO
+  Let $\Delta$ be the triangle in $\mathbb{R}^3$ with vertices $e_1 = (1,0,0)$,
+  $e_2 = (0,1,0)$, and $e_3 = (0,0,1)$. It suffices to prove that every continuous
+  map $f : \Delta \to \Delta$ has a fixed point, since $\Delta$ is homeomorphic to $B^2$.
+
+  We use $\delta(T)$ to denote the maximal length of an edge in a triangulation $T$.
+  One can easily construct an infinite sequence of triangulations $T_1, T_2, \dots$
+  of $\Delta$ such that the sequence of maximal diameters $\delta(T_k)$ converges to $0$
+  (for example by iterated barycentric subdivision).
+
+  For each of these triangulations, we define a $3$-coloring of their vertices $v$
+  by setting $\lambda(v) := \min\{i : f(v)_i < v_i\}$, that is, $\lambda(v)$ is the smallest
+  index $i$ such that the $i$-th coordinate of $f(v) - v$ is negative. If this smallest index $i$
+  does not exist, then we have found a fixed point and are done: To see this, note that every
+  $v \in \Delta$ lies in the plane $x_1 + x_2 + x_3 = 1$, hence $\sum_i v_i = 1$. So if
+  $f(v) \neq v$, then at least one of the coordinates of $f(v) - v$ must be negative (and at
+  least one must be positive).
+
+  Let us check that this coloring satisfies the assumptions of Sperner's lemma.
+  First, the vertex $e_i$ must receive color $i$, since the only possible negative
+  component of $f(e_i) - e_i$ is the $i$-th component. Moreover, if $v$ lies on the
+  edge opposite to $e_i$, then $v_i = 0$, so the $i$-th component of $f(v) - v$ cannot
+  be negative, and hence $v$ does not get the color $i$.
+
+  Sperner's lemma now tells us that in each triangulation $T_k$ there is a tricolored
+  triangle $\{v^{k:1}, v^{k:2}, v^{k:3}\}$ with $\lambda(v^{k:i}) = i$.
+  Since the simplex $\Delta$ is compact, some subsequence of $(v^{k:1})_{k \geq 1}$ has a
+  limit point~$v$. The distances of $v^{k:2}$ and $v^{k:3}$ from $v^{k:1}$ are at most the
+  mesh length $\delta(T_k) \to 0$, so all three sequences converge to the same point~$v$.
+
+  But where is $f(v)$? We know that the first coordinate of $f(v^{k:1})$ is smaller
+  than that of $v^{k:1}$ for all $k$. Now since $f$ is continuous, we derive that the
+  first coordinate of $f(v)$ is smaller or equal to that of $v$. The same reasoning
+  works for the second and third coordinates. Thus none of the coordinates
+  of $f(v) - v$ is positive --- and we have already seen that this contradicts
+  the assumption $f(v) \neq v$.
 \end{proof}
