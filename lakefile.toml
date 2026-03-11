@@ -10,6 +10,7 @@ relaxedAutoImplicit = false
 [[require]]
 name = "mathlib"
 git = "https://github.com/leanprover-community/mathlib4.git"
+lib = ["Mathlib", "Archive"]
 
 [[require]]
 name = "checkdecls"
