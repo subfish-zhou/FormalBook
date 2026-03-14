@@ -14,12 +14,6 @@
 
 (1) We claim that $G$ is a regular graph, that is, $d(u) = d(v)$ for any $u, v \in V$.
 
-\textbf{Lean formalization note:} Step~(1) — the proof that $G$ is regular, that
-$n = k^2 - k + 1$, and that $A^2 = (k-1)I + J$ — is delegated to Mathlib's
-\texttt{Archive.Wiedijk100Theorems.FriendshipGraphs} module, which provides
-\texttt{Friendship.isRegularOf\_not\_existsPolitician},
-\texttt{Friendship.card\_of\_regular}, and
-\texttt{Friendship.adjMatrix\_sq\_of\_regular}.
 
 Note first that the condition of the theorem implies that there are no cycles of length
 4 in $G$. Let us call this the \emph{$C_4$-condition}.
@@ -62,11 +56,6 @@ that $J$ has the eigenvalues $n$ (of multiplicity 1) and $0$ (of multiplicity $n
 follows that $A^2$ has the eigenvalues $k - 1 + n = k^2$ (of multiplicity 1) and $k - 1$
 (of multiplicity $n - 1$).
 
-\textbf{Lean formalization note:} Rather than analyzing the eigenvalues of $J$ first and then
-deducing those of $A^2$, the Lean proof derives the eigenvalues of $A^2$ directly via the
-annihilating polynomial $(A^2 - (k-1)I)(A^2 - k^2 I) = 0$, which follows from $A^2 = (k-1)I + J$
-and $J^2 = nJ$. This shows every eigenvalue of $A^2$ lies in $\{k-1, k^2\}$.
-
 Since $A$ is symmetric and hence diagonalizable, we conclude that $A$ has the eigenvalues $k$
 (of multiplicity 1) and $\pm \sqrt{k - 1}$. Suppose $r$ of the eigenvalues are equal to
 $\sqrt{k - 1}$ and $s$ of them are equal to $-\sqrt{k - 1}$, with $r + s = n - 1$.
@@ -86,11 +75,6 @@ $\ell \in \mathbb{N}$ with $0 < \sqrt{m} - \ell < 1$. Setting $n_1 := n_0(\sqrt{
 we find $n_1 \in \mathbb{N}$ and
 $n_1 \sqrt{m} = n_0 (\sqrt{m} - \ell) \sqrt{m} = n_0 m - \ell (n_0 \sqrt{m}) \in \mathbb{N}$.
 With $n_1 < n_0$ this yields a contradiction to the choice of $n_0$.
-
-\textbf{Lean formalization note:} The Lean proof uses an equivalent algebraic form of this
-lemma: if $p^2 = m \cdot q^2$ with $\gcd(p,q) = 1$, then $q = 1$
-(\texttt{Nat.sqrt\_rational\_is\_integer}). This follows from coprimality and divisibility
-rather than the minimal-element argument above.
 
 Returning to our equation, let us set $h = \sqrt{k - 1} \in \mathbb{N}$, then
 \[
