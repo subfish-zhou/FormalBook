@@ -727,7 +727,9 @@ local notation "I(" v ")" => G.incidenceFinset v
 local notation "d(" v ")" => G.degree v
 local notation "n" => Fintype.card α
 
--- TODO: equality #E = (n^2 / 4) iff G = K_{n/2, n/2}
+/-- **Mantel's theorem** (Proof 1, Cauchy inequality): A triangle-free graph on `n` vertices
+has at most `n² / 4` edges. The original book also proves equality iff `G = K_{⌊n/2⌋,⌈n/2⌉}`;
+this characterization is not yet formalized. -/
 theorem mantel (h: G.CliqueFree 3) : #E ≤ (n^2 / 4) := by
 
   -- The degrees of two adjacent vertices cannot sum to more than n
