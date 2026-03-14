@@ -865,6 +865,115 @@ theorem mantel_eq_adj_degree (h : G.CliqueFree 3) (heq : #E * 4 = n ^ 2)
   have hedge : s(i, j) ∈ E := G.mem_edgeFinset.mpr (G.mem_edgeSet.mpr hij)
   exact hforall s(i, j) hedge
 
+/-- If G is triangle-free and #E * 4 = n², then every vertex has degree n / 2. -/
+theorem mantel_eq_regular (h : G.CliqueFree 3) (heq : #E * 4 = n ^ 2)
+    (v : α) : d(v) = n / 2 := by
+  have hadj := mantel_eq_adj_degree h heq
+  -- We show 4 * ∑ d(v)² = n² * n and use handshaking to derive 2*d(v)=n for all v.
+
+  -- Identity: ∑_{e∈E} (d(i)+d(j)) = ∑_v d(v)²  (double counting)
+  let sum_deg (e : Sym2 α) : ℕ :=
+    Sym2.lift ⟨λ x y ↦ d(x) + d(y), by simp [Nat.add_comm]⟩ e
+
+  have sum_eq_sq : ∑ e ∈ E, sum_deg e = ∑ w ∈ V, d(w) ^ 2 := by
+    calc  ∑ e ∈ E, sum_deg e
+      _ = ∑ e ∈ E, ∑ v ∈ e, d(v) := Finset.sum_congr rfl (λ e he ↦ by
+          induction e with | _ v w =>
+            simp at he; simp [sum_deg, he.ne])
+      _ = ∑ e ∈ E, ∑ v ∈ {v' ∈ V | v' ∈ e}, d(v) := Finset.sum_congr rfl (by
+          intro e _; exact congrFun (congrArg Finset.sum (by ext; simp)) _)
+      _ = ∑ v ∈ V, ∑ _ ∈ {e ∈ E | v ∈ e}, d(v) :=
+          Finset.sum_sum_bipartiteAbove_eq_sum_sum_bipartiteBelow _ _
+      _ = ∑ v ∈ V, ∑ _ ∈ I(v), d(v) := Finset.sum_congr rfl (λ v ↦ by
+          simp [G.incidenceFinset_eq_filter v])
+      _ = ∑ w ∈ V, d(w) ^ 2 := by simp [Nat.pow_two]
+
+  have hforall : ∀ e ∈ E, sum_deg e = n := by
+    intro e he; induction e with | _ i j => simp at he; exact hadj i j he
+
+  have hsumsq : ∑ w ∈ V, d(w) ^ 2 = #E * n := by
+    rw [← sum_eq_sq, Finset.sum_congr rfl hforall]; simp [Finset.sum_const]
+
+  -- Key: 4 * ∑ d² = 4 * #E * n = n² * n = n³
+  -- and (∑ d)² = (2*#E)² = 4*#E² and n * 4*#E² = n * #E * 4 * #E = n * n² * #E...
+  -- Let's just work in ℤ directly.
+
+  suffices h2d : 2 * d(v) = n by omega
+
+  -- Cast everything to ℤ
+  have hsumsq_z : (∑ w : α, (d(w) : ℤ) ^ 2) = ↑(#E) * ↑n := by
+    have := hsumsq; simp only [] at this ⊢
+    exact_mod_cast this
+  have hsumdeg_z : (∑ w : α, (d(w) : ℤ)) = 2 * ↑(#E) := by
+    have := G.sum_degrees_eq_twice_card_edges
+    exact_mod_cast this
+  have heq_z : (↑(#E) : ℤ) * 4 = ↑n ^ 2 := by exact_mod_cast heq
+
+  -- ∑ (2d - n)² = 4 ∑ d² - 4n ∑d + n²·n = 4·#E·n - 4n·2#E + n³ = 4n#E - 8n#E + n³
+  --             = n³ - 4n#E = n·(n² - 4#E) = 0
+  have key : ∑ w : α, ((2 * (d(w) : ℤ) - ↑n) ^ 2) = 0 := by
+    have expand : ∀ w : α, (2 * (d(w) : ℤ) - ↑n) ^ 2 =
+        4 * (d(w) : ℤ) ^ 2 - 4 * ↑n * (d(w) : ℤ) + ↑n ^ 2 := by intro; ring
+    simp_rw [expand]
+    rw [Finset.sum_add_distrib, Finset.sum_sub_distrib]
+    simp only [Finset.sum_const, Finset.card_univ, nsmul_eq_mul, ← Finset.mul_sum]
+    nlinarith [hsumsq_z, hsumdeg_z, heq_z]
+
+  have hv_sq : (2 * (d(v) : ℤ) - ↑n) ^ 2 = 0 := by
+    have hnn := Finset.sum_eq_zero_iff_of_nonneg
+      (f := fun w => (2 * (d(w) : ℤ) - ↑n) ^ 2) (s := Finset.univ)
+      (fun w _ => sq_nonneg _)
+    rw [hnn] at key
+    exact key v (Finset.mem_univ v)
+  have h0 : 2 * (d(v) : ℤ) - ↑n = 0 := by
+    nlinarith [sq_nonneg (2 * (d(v) : ℤ) - ↑n)]
+  linarith
+
+/-- If G is triangle-free and #E * 4 = n², then G is a complete bipartite graph:
+there exist disjoint sets A, B partitioning V with |A| = |B| = n/2 such that
+every vertex in A is adjacent to every vertex in B. -/
+theorem mantel_eq_bipartite (h : G.CliqueFree 3) (heq : #E * 4 = n ^ 2)
+    [Nonempty α] :
+    ∃ (A B : Finset α), A ∩ B = ∅ ∧ A ∪ B = Finset.univ ∧
+      #A = n / 2 ∧ #B = n / 2 ∧ ∀ i ∈ A, ∀ j ∈ B, G.Adj i j := by
+  have hreg := mantel_eq_regular h heq
+  -- Triangle-free: neighbor sets are independent
+  have hind : ∀ v : α, G.IsIndepSet (G.neighborFinset v : Set α) := fun v => by
+    rw [SimpleGraph.neighborFinset_def, Set.coe_toFinset]
+    exact G.isIndepSet_neighborSet_of_triangleFree h v
+  -- Pick any vertex v₀
+  obtain ⟨v₀⟩ := ‹Nonempty α›
+  set A := G.neighborFinset v₀
+  set B := Aᶜ
+  have hA_card : #A = n / 2 := by
+    rw [SimpleGraph.card_neighborFinset_eq_degree]; exact hreg v₀
+  have h2n : 2 ∣ n := by
+    have h4 : 4 ∣ n ^ 2 := ⟨#E, by linarith⟩
+    have h2sq : 2 ∣ n ^ 2 := dvd_trans ⟨2, rfl⟩ h4
+    exact Nat.Prime.dvd_of_dvd_pow Nat.prime_two h2sq
+  have hB_card : #B = n / 2 := by
+    have hc : #B = n - #A := Finset.card_compl A
+    obtain ⟨k, hk⟩ := h2n
+    omega
+  refine ⟨A, B, Finset.inter_compl A, Finset.union_compl A, hA_card, hB_card, ?_⟩
+  intro i hi j hj
+  -- i ∈ A = N(v₀), so A is independent. N(i) ∩ A = ∅, so N(i) ⊆ B.
+  -- |N(i)| = n/2 = |B|, so N(i) = B, hence j ∈ N(i).
+  have hA_indep := hind v₀
+  have hNi_sub : G.neighborFinset i ⊆ B := by
+    intro w hw
+    rw [Finset.mem_compl]
+    intro ha
+    have hadj_iw : G.Adj i w := by rwa [SimpleGraph.mem_neighborFinset] at hw
+    by_cases hiw : i = w
+    · exact absurd (hiw ▸ hadj_iw) (G.loopless i)
+    · exact absurd hadj_iw (hA_indep hi ha hiw)
+  have hNi_eq : G.neighborFinset i = B :=
+    Finset.eq_of_subset_of_card_le hNi_sub (by
+      rw [SimpleGraph.card_neighborFinset_eq_degree, hreg i]; omega)
+  rw [← hNi_eq] at hj
+  rwa [SimpleGraph.mem_neighborFinset] at hj
+
 end MantelEquality
 
 section MantelAMGMProof
