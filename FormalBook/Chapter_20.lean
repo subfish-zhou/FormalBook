@@ -903,6 +903,73 @@ theorem laguerre_root_bound (n : ℕ) (hn : 2 ≤ n) (y : Fin n → ℝ) (i : Fi
   rw [hn1] at cs
   nlinarith [cs, sq_nonneg (∑ j ∈ S, y j)]
 
+/-- Auxiliary: solving a quadratic inequality `a * x² + b * x + c ≤ 0` with `a > 0`
+    yields `(−b − √(b²−4ac))/(2a) ≤ x ≤ (−b + √(b²−4ac))/(2a)`. -/
+private theorem quadratic_le_zero_interval (a b c x : ℝ) (ha : 0 < a)
+    (hD : 0 ≤ b ^ 2 - 4 * a * c) (hle : a * x ^ 2 + b * x + c ≤ 0) :
+    (-b - Real.sqrt (b ^ 2 - 4 * a * c)) / (2 * a) ≤ x ∧
+    x ≤ (-b + Real.sqrt (b ^ 2 - 4 * a * c)) / (2 * a) := by
+  have ha2 : 0 < 2 * a := by linarith
+  have hsq := Real.sq_sqrt hD
+  set D := Real.sqrt (b ^ 2 - 4 * a * c) with hD_def
+  have hD_nn : 0 ≤ D := Real.sqrt_nonneg _
+  constructor
+  · rw [div_le_iff₀ ha2]
+    nlinarith [sq_nonneg (2 * a * x + b + D)]
+  · rw [le_div_iff₀ ha2]
+    nlinarith [sq_nonneg (2 * a * x + b - D)]
+
+/-- **Laguerre's root interval**: From the quadratic-form bound, every root yᵢ satisfies
+    (S − √((n−1)(nQ−S²))) / n ≤ yᵢ ≤ (S + √((n−1)(nQ−S²))) / n,
+    where S = ∑ yⱼ and Q = ∑ yⱼ².
+
+    In terms of polynomial coefficients (S = −aₙ₋₁, Q = aₙ₋₁² − 2aₙ₋₂),
+    this recovers Laguerre's classical interval
+    −aₙ₋₁/n ± ((n−1)/n)√(aₙ₋₁² − 2n·aₙ₋₂/(n−1)). -/
+theorem laguerre_root_interval (n : ℕ) (hn : 2 ≤ n) (y : Fin n → ℝ) (i : Fin n)
+    (hD : 0 ≤ (↑n - 1) * (↑n * (∑ j, (y j) ^ 2) - (∑ j, y j) ^ 2)) :
+    ((∑ j, y j) - Real.sqrt ((↑n - 1) * (↑n * (∑ j, (y j) ^ 2) - (∑ j, y j) ^ 2))) / ↑n
+      ≤ y i ∧
+    y i ≤
+    ((∑ j, y j) + Real.sqrt ((↑n - 1) * (↑n * (∑ j, (y j) ^ 2) - (∑ j, y j) ^ 2))) / ↑n := by
+  have hn_pos : (0 : ℝ) < ↑n := Nat.cast_pos.mpr (by omega)
+  -- Apply the quadratic bound
+  have hqf := laguerre_root_bound n hn y i
+  -- Rewrite as: n * (y i)² − 2 * S * (y i) + (S² − (n−1) * Q) ≤ 0
+  set S := ∑ j, y j
+  set Q := ∑ j, (y j) ^ 2
+  -- hqf : n * (y i)² − 2 * S * (y i) + S² ≤ (n − 1) * Q
+  -- i.e. n * (y i)² + (−2 * S) * (y i) + (S² − (n − 1) * Q) ≤ 0
+  have hle : ↑n * (y i) ^ 2 + (-2 * S) * (y i) + (S ^ 2 - (↑n - 1) * Q) ≤ 0 := by linarith
+  -- Discriminant: (−2S)² − 4n(S² − (n−1)Q) = 4(n−1)(nQ − S²)
+  have hdisc : (-2 * S) ^ 2 - 4 * ↑n * (S ^ 2 - (↑n - 1) * Q) =
+      4 * ((↑n - 1) * (↑n * Q - S ^ 2)) := by ring
+  have hD4 : 0 ≤ (-2 * S) ^ 2 - 4 * ↑n * (S ^ 2 - (↑n - 1) * Q) := by
+    rw [hdisc]; linarith [hD]
+  have h := quadratic_le_zero_interval ↑n (-2 * S) (S ^ 2 - (↑n - 1) * Q) (y i) hn_pos hD4 hle
+  -- Now simplify the bounds
+  -- The bounds are: (2S ∓ √(4(n−1)(nQ−S²))) / (2n)
+  -- = (S ∓ √((n−1)(nQ−S²))) / n
+  have hsqrt_factor : Real.sqrt ((-2 * S) ^ 2 - 4 * ↑n * (S ^ 2 - (↑n - 1) * Q)) =
+      2 * Real.sqrt ((↑n - 1) * (↑n * Q - S ^ 2)) := by
+    rw [hdisc]
+    have : (4 : ℝ) * ((↑n - 1) * (↑n * Q - S ^ 2)) =
+        (2 * Real.sqrt ((↑n - 1) * (↑n * Q - S ^ 2))) ^ 2 := by
+      rw [mul_pow, Real.sq_sqrt hD]; ring
+    rw [this]
+    exact Real.sqrt_sq (by positivity)
+  constructor
+  · have h1 := h.1
+    rw [hsqrt_factor] at h1
+    have : (- (-2 * S) - 2 * Real.sqrt ((↑n - 1) * (↑n * Q - S ^ 2))) / (2 * ↑n) =
+        (S - Real.sqrt ((↑n - 1) * (↑n * Q - S ^ 2))) / ↑n := by ring
+    linarith
+  · have h2 := h.2
+    rw [hsqrt_factor] at h2
+    have : (- (-2 * S) + 2 * Real.sqrt ((↑n - 1) * (↑n * Q - S ^ 2))) / (2 * ↑n) =
+        (S + Real.sqrt ((↑n - 1) * (↑n * Q - S ^ 2))) / ↑n := by ring
+    linarith
+
 end Laguerre
 
 /-!
