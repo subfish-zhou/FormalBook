@@ -35,16 +35,17 @@ Following the book's approach:
 **Dedekind's lemma (1858)** then forces `√(k-1)` to be an integer `h`, giving
 `k = h² + 1` and `h | h² + 1`, hence `h | 1`, so `k = 2` — contradiction.
 
-### Dedekind's lemma: book proof vs. formalization
+### Dedekind's lemma: book proof and formalization
 
 The book presents Dedekind's 1858 proof by *infinite descent*: let `n₀` be the smallest
 natural number with `n₀√m ∈ ℕ`. If `√m ∉ ℕ`, pick `ℓ ∈ ℕ` with `0 < √m - ℓ < 1`, then
 `n₁ := n₀(√m - ℓ) < n₀` also satisfies `n₁√m ∈ ℕ`, contradicting minimality.
 
-Our formalization uses the equivalent *coprime representation*: if `p² = m·q²` with
-`gcd(p,q) = 1`, then `q² | p²` and coprimality forces `q² | 1`, hence `q = 1`. This is
-the same argument in different clothing — "smallest denominator" ↔ "coprime fraction" ↔
-"reduced form" — and both establish that `√m` rational implies `√m` integer.
+Our primary formalization follows this infinite descent directly: given `p² = m·q²`, if
+`q ∤ p` we construct a smaller witness `q₁ = p mod q` with `p₁² = m·q₁²` where
+`p₁ = m·q - ⌊p/q⌋·p`. This is the "smallest denominator" argument in pure arithmetic.
+
+An alternative proof using coprime fractions is also provided.
 -/
 
 set_option maxHeartbeats 6400000
@@ -60,15 +61,68 @@ variable {G : SimpleGraph V} {d : ℕ}
 /-! ### Dedekind's lemma (1858): √m rational ⟹ √m integer
 
 The book's proof uses infinite descent on the smallest `n₀` with `n₀√m ∈ ℕ`.
-We formalize the equivalent coprime-fraction version: `p² = m·q²` with `gcd(p,q) = 1`
-forces `q = 1`. Both arguments establish that `√m ∈ ℚ ⟹ √m ∈ ℤ`. -/
+We provide two formalizations: the primary one follows the book's descent argument,
+and an alternative uses coprime fractions. -/
 
-/-- **Dedekind's lemma (1858).** If `p² = m * q²` with `gcd(p,q) = 1`, then `q = 1`.
+/-- **Dedekind's lemma (1858), infinite descent proof (the book's proof).**
+If `p² = m * q²` with `q > 0`, then `q ∣ p` (and hence `m` is a perfect square).
 
-This is the coprime-fraction formulation of: if `√m` is rational, it is an integer.
-The book's "smallest natural number" argument is equivalent — reducing a fraction to
-lowest terms is the same as choosing the minimal denominator. -/
+The descent: if `q ∤ p`, set `ℓ = p / q`, `q₁ = p % q`, `p₁ = m * q - ℓ * p`.
+Then `0 < q₁ < q` and `p₁² = m * q₁²`, contradicting the minimality of `q`. -/
 lemma Nat.sqrt_rational_is_integer (m p q : ℕ) (hq : 0 < q)
+    (hsq : p ^ 2 = m * q ^ 2) : q ∣ p := by
+  -- Generalize p so the IH is universal
+  suffices h : ∀ q : ℕ, 0 < q → ∀ p : ℕ, p ^ 2 = m * q ^ 2 → q ∣ p from h q hq p hsq
+  intro q; induction q using Nat.strongRecOn with
+  | ind q ih =>
+    intro hq p hsq
+    by_cases hdvd : q ∣ p
+    · exact hdvd
+    · exfalso
+      set ℓ := p / q
+      set q₁ := p % q
+      have hq1_pos : 0 < q₁ :=
+        Nat.pos_of_ne_zero (fun h => hdvd (Nat.dvd_of_mod_eq_zero h))
+      have hq1_lt : q₁ < q := Nat.mod_lt p hq
+      -- Define p₁ in ℤ to avoid subtraction issues, then cast back
+      set p₁_z : ℤ := (m : ℤ) * q - (ℓ : ℤ) * p
+      have hq1_z : (q₁ : ℤ) = (p : ℤ) - (ℓ : ℤ) * q := by
+        have h := Nat.div_add_mod p q
+        have : q * ℓ + q₁ = p := h
+        zify at this ⊢; linarith
+      have hsq_z : (p : ℤ) ^ 2 = (m : ℤ) * (q : ℤ) ^ 2 := by exact_mod_cast hsq
+      have hsq1_z : p₁_z ^ 2 = (m : ℤ) * (q₁ : ℤ) ^ 2 := by
+        have hp : p₁_z = (m : ℤ) * q - (ℓ : ℤ) * p := rfl
+        have hq : (q₁ : ℤ) = (p : ℤ) - (ℓ : ℤ) * q := hq1_z
+        -- (mq - ℓp)² = m²q² - 2mℓpq + ℓ²p²
+        -- m(p - ℓq)² = mp² - 2mℓpq + mℓ²q²
+        -- difference: m²q² + ℓ²p² - mp² - mℓ²q² = m²q² - mq²·ℓ² + ℓ²·mq² - mp²
+        -- Using p² = mq²: ℓ²p² = ℓ²mq² and m²q² = m·mq² = m·p²
+        -- So both simplify to m·p² - 2mℓpq + mℓ²q² = m(p² - 2ℓpq + ℓ²q²)
+        rw [hp, hq]
+        have : (p : ℤ) ^ 2 = (m : ℤ) * (q : ℤ) ^ 2 := hsq_z
+        ring_nf
+        nlinarith
+      have hp1_nn : 0 ≤ p₁_z := by nlinarith [sq_nonneg p₁_z, sq_nonneg (q₁ : ℤ)]
+      set p₁ := p₁_z.toNat
+      have hp1_cast : (p₁ : ℤ) = p₁_z := Int.toNat_of_nonneg hp1_nn
+      have hsq1 : p₁ ^ 2 = m * q₁ ^ 2 := by
+        exact_mod_cast (show (p₁ : ℤ) ^ 2 = (m : ℤ) * (q₁ : ℤ) ^ 2 by rw [hp1_cast]; exact hsq1_z)
+      have hdvd1 : q₁ ∣ p₁ := ih q₁ hq1_lt hq1_pos p₁ hsq1
+      obtain ⟨k, hk⟩ := hdvd1
+      have hm_sq : m = k ^ 2 := by
+        have h1 : (q₁ * k) ^ 2 = m * q₁ ^ 2 := by rw [← hk]; exact hsq1
+        have h2 : k ^ 2 * q₁ ^ 2 = m * q₁ ^ 2 := by nlinarith
+        have := Nat.eq_of_mul_eq_mul_right (by positivity : 0 < q₁ ^ 2) h2
+        exact this.symm
+      have hpsq : p ^ 2 = (k * q) ^ 2 := by nlinarith
+      have hpeq : p = k * q := by
+        nlinarith [Nat.sqrt_le_sqrt (le_of_eq hpsq), sq_nonneg (p - k * q), sq_nonneg (k * q - p)]
+      exact hdvd ⟨k, by linarith⟩
+
+/-- **Dedekind's lemma (1858), alternative proof (coprime version).**
+If `p² = m * q²` with `gcd(p,q) = 1`, then `q = 1`. -/
+lemma Nat.sqrt_rational_is_integer_coprime (m p q : ℕ) (hq : 0 < q)
     (hcop : Nat.Coprime p q) (hsq : p ^ 2 = m * q ^ 2) : q = 1 := by
   have h1 : q ^ 2 ∣ p ^ 2 := ⟨m, by linarith⟩
   have h3 : q ^ 2 ∣ 1 := by
@@ -108,7 +162,7 @@ private lemma false_of_sq_mul_pred_eq_sq (d k : ℕ) (hd : 3 ≤ d) (hk : 0 < k)
       nlinarith
     exact mul_left_cancel₀ (by positivity : (g : ℕ) ^ 2 ≠ 0) h2
   -- Apply Dedekind's lemma: a² = (d-1)·b² with gcd(a,b) = 1 gives b = 1
-  have hb1 : b = 1 := Nat.sqrt_rational_is_integer (d - 1) a b hb_pos hcop (by linarith)
+  have hb1 : b = 1 := Nat.sqrt_rational_is_integer_coprime (d - 1) a b hb_pos hcop (by linarith)
   subst hb1; rw [one_mul] at hbk; subst hbk
   simp only [one_pow, one_mul] at heq2
   -- Now d - 1 = a², so d = a² + 1 = a·k, hence a·k = a² + 1
