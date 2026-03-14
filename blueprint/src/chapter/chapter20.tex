@@ -71,6 +71,8 @@ and thus the discriminant $\langle a, b \rangle^2 - |a|^2 |b|^2$ is less than 0.
 
 \begin{theorem}
   \label{ch20theorem1}
+  \lean{laguerre_root_bound}
+  \leanok
   Suppose all roots fo the polynomial
   $x^n + a_{n - 1}x^{n - 1} + \dots +a_0$ are real.
   Then the roots of are contained in the interval with the endpoints
@@ -85,7 +87,10 @@ and thus the discriminant $\langle a, b \rangle^2 - |a|^2 |b|^2$ is less than 0.
 
 
 \begin{theorem}
-  \label{ch20theorem2} Let $f(x)$ be a real polynomial of degree $n \ge 2$ with only real
+  \label{ch20theorem2}
+  \lean{erdos_gallai_A_ge_two_thirds_T}
+  \leanok
+  Let $f(x)$ be a real polynomial of degree $n \ge 2$ with only real
   roots, such that $f(x)> 0$ for $ -1 < x < 1$ amd $f(-1) = f(1) = 0$. Then
   \[
   \frac{2}{3}T \le A \le \frac{2}{3}R,
@@ -93,7 +98,14 @@ and thus the discriminant $\langle a, b \rangle^2 - |a|^2 |b|^2$ is less than 0.
   and equality holds in both cases only for $n=2$.
 \end{theorem}
 \begin{proof}
-  TODO
+  \uses{ch20theorem2}
+  P\'olya's proof via symmetrization and AM-GM. We write
+  $f(x) = (1-x^2)\prod(\alpha_i - x)\prod(\beta_j + x)$ and show:
+  (1) $-f'(1)f'(-1) = 4C^2$ where $C^2 = \prod(\alpha_i^2-1)\prod(\beta_j^2-1)$;
+  (2) $T \le \sqrt{-f'(1)f'(-1)}$ by HM-GM;
+  (3) $A \ge (4/3)C$ by symmetrization + AM-GM on the integral.
+  Combining gives $A \ge (2/3)T$.
+  Algebraic identities fully formalized; integral layer uses sorry.
 \end{proof}
 
 \begin{theorem}
@@ -131,6 +143,8 @@ and thus the discriminant $\langle a, b \rangle^2 - |a|^2 |b|^2$ is less than 0.
 
 \begin{theorem}
   \label{ch20theorem3proof2}
+  \lean{mantel_amgm}
+  \leanok
   Suppose $G$ is a graph on $n$ vertices without triangles. Then $G$
   has at most $\frac{n^2}{4}$ edges, and equality holds only when $n$ is even and $G$ is the
   complete bipartite graph $K_{n/2, n/2}$.

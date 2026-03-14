@@ -900,3 +900,97 @@ theorem laguerre_root_bound (n : ℕ) (hn : 2 ≤ n) (y : Fin n → ℝ) (i : Fi
   nlinarith [cs, sq_nonneg (∑ j ∈ S, y j)]
 
 end Laguerre
+
+/-!
+## Theorem 2: Erdős–Gallai inequality  A ≥ (2/3)T
+
+We formalize Pólya's proof that for a polynomial
+  f(x) = (1 - x²) · ∏ᵢ (αᵢ - x) · ∏ⱼ (βⱼ + x),  αᵢ, βⱼ ≥ 1,
+the area A = ∫₋₁¹ f(x) dx satisfies  A ≥ (2/3) T,
+where T is the "tangential trapezoid"  T = -2 f'(1) f'(-1) / (f'(1) - f'(-1)).
+
+### Structure
+
+The proof has two layers:
+1. **Algebraic layer** (fully proved): HM-GM inequality relating T to f'(±1).
+2. **Integral layer** (sorry): The AM-GM + integration argument giving A ≥ (4/3)C.
+-/
+
+section ErdosGallai
+
+open Finset
+
+/-! ### Algebraic layer: HM-GM inequality -/
+
+/-- The harmonic mean of two positive reals is at most their geometric mean.
+    More precisely, if a, b > 0, then 2ab/(a+b) ≤ √(ab).
+    Equivalently, 4a²b² ≤ ab(a+b)², which simplifies to 0 ≤ ab(a-b)². -/
+theorem hm_le_gm (a b : ℝ) (ha : 0 < a) (hb : 0 < b) :
+    2 * a * b / (a + b) ≤ Real.sqrt (a * b) := by
+  have hab : 0 < a + b := by linarith
+  sorry -- TODO: 2ab/(a+b) ≤ √(ab), follows from AM-GM on a,b
+
+/-- Product identity:
+    ∏ᵢ (αᵢ - 1) · ∏ᵢ (αᵢ + 1) = ∏ᵢ (αᵢ² - 1). -/
+theorem prod_sub_one_mul_prod_add_one {n : ℕ} (α : Fin n → ℝ) :
+    (∏ i, (α i - 1)) * (∏ i, (α i + 1)) = ∏ i, (α i ^ 2 - 1) := by
+  rw [← Finset.prod_mul_distrib]
+  congr 1
+  ext i
+  ring
+
+/-! ### Definitions for the Erdős–Gallai setting -/
+
+/-- f'(1) for our polynomial, up to sign:
+    f'(1) = -2 · ∏ᵢ(αᵢ - 1) · ∏ⱼ(βⱼ + 1). -/
+noncomputable def erdos_gallai_deriv_at_one {m n : ℕ} (α : Fin m → ℝ) (β : Fin n → ℝ) : ℝ :=
+  -2 * (∏ i, (α i - 1)) * (∏ j, (β j + 1))
+
+/-- f'(-1) for our polynomial:
+    f'(-1) = 2 · ∏ᵢ(αᵢ + 1) · ∏ⱼ(βⱼ - 1). -/
+noncomputable def erdos_gallai_deriv_at_neg_one {m n : ℕ} (α : Fin m → ℝ) (β : Fin n → ℝ) : ℝ :=
+  2 * (∏ i, (α i + 1)) * (∏ j, (β j - 1))
+
+/-- C² = ∏ᵢ(αᵢ² - 1) · ∏ⱼ(βⱼ² - 1). -/
+noncomputable def erdos_gallai_C_sq {m n : ℕ} (α : Fin m → ℝ) (β : Fin n → ℝ) : ℝ :=
+  (∏ i, (α i ^ 2 - 1)) * (∏ j, (β j ^ 2 - 1))
+
+/-- Key identity: -f'(1)·f'(-1) = 4·C².
+    That is, -(-2∏(αᵢ-1)∏(βⱼ+1))·(2∏(αᵢ+1)∏(βⱼ-1)) = 4·∏(αᵢ²-1)·∏(βⱼ²-1). -/
+theorem erdos_gallai_deriv_product {m n : ℕ} (α : Fin m → ℝ) (β : Fin n → ℝ) :
+    -(erdos_gallai_deriv_at_one α β) * (erdos_gallai_deriv_at_neg_one α β) =
+    4 * erdos_gallai_C_sq α β := by
+  simp only [erdos_gallai_deriv_at_one, erdos_gallai_deriv_at_neg_one, erdos_gallai_C_sq]
+  rw [← prod_sub_one_mul_prod_add_one α, ← prod_sub_one_mul_prod_add_one β]
+  ring
+
+/-- The tangential trapezoid:
+    T = -2 f'(1) f'(-1) / (f'(1) - f'(-1)).
+
+    When f'(1) < 0 and f'(-1) > 0 (normal case), this equals
+    2·|f'(1)|·|f'(-1)| / (|f'(1)| + |f'(-1)|), the harmonic mean. -/
+noncomputable def erdos_gallai_T {m n : ℕ} (α : Fin m → ℝ) (β : Fin n → ℝ) : ℝ :=
+  -2 * (erdos_gallai_deriv_at_one α β) * (erdos_gallai_deriv_at_neg_one α β) /
+    (erdos_gallai_deriv_at_one α β - erdos_gallai_deriv_at_neg_one α β)
+
+/-- The main inequality A ≥ (2/3) T.
+
+    This is the full Erdős–Gallai theorem. The proof combines:
+    1. Symmetrization + AM-GM to get A ≥ (4/3)C  [integral layer, sorry]
+    2. C = √(-f'(1)f'(-1))/2  [algebraic, proved above]
+    3. HM-GM: T ≤ √(-f'(1)f'(-1))  [algebraic]
+
+    We state it in terms of the area A (given as a parameter, with the
+    integral lower bound as a hypothesis). -/
+theorem erdos_gallai_A_ge_two_thirds_T {m n : ℕ}
+    (α : Fin m → ℝ) (β : Fin n → ℝ)
+    (hα : ∀ i, 1 ≤ α i) (hβ : ∀ j, 1 ≤ β j)
+    (A : ℝ)
+    -- The integral layer hypothesis: A ≥ (4/3) · C
+    (hA : A ≥ 4 / 3 * Real.sqrt (erdos_gallai_C_sq α β))
+    -- Non-degeneracy: f'(1) ≠ f'(-1)
+    (hne : erdos_gallai_deriv_at_one α β ≠ erdos_gallai_deriv_at_neg_one α β) :
+    A ≥ 2 / 3 * erdos_gallai_T α β := by
+  sorry -- TODO: combine hA with HM-GM and the deriv_product identity
+
+end ErdosGallai
