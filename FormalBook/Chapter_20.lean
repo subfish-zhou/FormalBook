@@ -23,23 +23,21 @@ open Classical
 /-!
 # In praise of inequalities
 
-## TODO
-  - Theorem I
-    - proof
-  - Theorem II
-    - proof
-      - (A)
-      - (B)
-    - another proof
-    - still another proof
-  - Theorem 1
-    - proof
-  - The tangential triangle
-  - Theorem 2
-    - proof
-  - Theorem 3
-    - First proof
-    - Second proof
+Formalization of Chapter 20 from "Proofs from THE BOOK" (Aigner & Ziegler).
+
+## Contents
+
+- [x] **Theorem I** (Cauchy–Schwarz inequality): `cauchy_schwarz_inequality`
+- [x] **Theorem II** (HM–GM–AM inequality), three proofs:
+  - Proof 1 (Cauchy forward-backward induction): `harmonic_geometric_arithmetic₁`
+  - Proof 2 (Alzer/Dacar, log x ≤ x − 1): `harmonic_geometric_arithmetic₂`
+  - Proof 3 (Hirschhorn, Bernoulli inequality): `harmonic_geometric_arithmetic₃`
+- [x] **Theorem 1** (Laguerre root bound): `laguerre_root_bound`, `laguerre_root_interval`
+- [x] **Theorem 2** (Erdős–Gallai, A ≥ (2/3)T): `erdos_gallai_full`
+  - Note: the right half A ≤ (2/3)R is left to the reader in the original book
+- [x] **Theorem 3** (Mantel's theorem), two proofs:
+  - Proof 1 (Cauchy inequality): `mantel`
+  - Proof 2 (AM-GM / independent set): `mantel_amgm`
 -/
 
 section Inequalities
