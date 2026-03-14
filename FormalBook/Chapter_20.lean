@@ -149,9 +149,9 @@ lemma cauchy_amgm_backward (n : ℕ) (hn : 0 < n) (h : CauchyAMGM (n + 1)) :
     intro i; simp only [ha'_def, Fin.snoc]; split <;> [exact hpos _; exact hA_nn]
   have key := h a' ha'_pos
   have hsum_a' : ∑ i : Fin (n + 1), a' i = (∑ i : Fin n, a i) + A := by
-    rw [Fin.sum_univ_castSucc]; simp [ha'_def, Fin.snoc]
+    rw [Fin.sum_univ_castSucc]; simp [ha'_def]
   have hprod_a' : ∏ i : Fin (n + 1), a' i = (∏ i : Fin n, a i) * A := by
-    rw [Fin.prod_univ_castSucc]; simp [ha'_def, Fin.snoc]
+    rw [Fin.prod_univ_castSucc]; simp [ha'_def]
   have hsum_eq : (∑ i : Fin n, a i) + A = (↑n + 1) * A := by rw [hA_def]; field_simp
   have hcast : (↑(n + 1) : ℝ) = ↑n + 1 := by push_cast; ring
   rw [hsum_a', hprod_a', hsum_eq, hcast] at key
@@ -161,8 +161,7 @@ lemma cauchy_amgm_backward (n : ℕ) (hn : 0 < n) (h : CauchyAMGM (n + 1)) :
       rw [hA_def] at hA0; exact (div_eq_zero_iff.mp hA0).resolve_right (ne_of_gt hn_pos)
     have hzero : ∀ i, a i = 0 := fun i =>
       (Finset.sum_eq_zero_iff_of_nonneg (fun j _ => hpos j)).mp hsum0 i (Finset.mem_univ _)
-    simp only [hzero, Finset.sum_const_zero, Finset.prod_const, zero_div,
-      zero_pow (by omega : n ≠ 0)]
+    simp only [hzero, Finset.prod_const]
     rw [hA0]; simp [Fintype.card_fin, zero_pow (by omega : n ≠ 0)]
   · exact le_of_mul_le_mul_right key (lt_of_le_of_ne hA_nn (Ne.symm hA0))
 
@@ -796,6 +795,7 @@ private lemma nat_mul_le_sq_div4 (a b : ℕ) : a * b ≤ (a + b) ^ 2 / 4 := by
   omega
 
 -- For triangle-free G, each vertex degree ≤ indepNum
+omit [DecidableEq α] in
 private lemma degree_le_indepNum (h : G.CliqueFree 3) (v : α) :
     G.degree v ≤ G.indepNum := by
   have hind : G.IsIndepSet (G.neighborSet v) :=
@@ -840,7 +840,7 @@ theorem mantel_amgm (h: G.CliqueFree 3) : G.edgeFinset.card ≤ (Fintype.card α
   have hAc_bound : ∑ v ∈ Aᶜ, G.degree v ≤ Aᶜ.card * α_val := by
     calc ∑ v ∈ Aᶜ, G.degree v ≤ ∑ _v ∈ Aᶜ, α_val :=
           Finset.sum_le_sum (fun v _ => hdeg v)
-      _ = Aᶜ.card * α_val := by simp [Finset.sum_const, Nat.smul_one_eq_cast]
+      _ = Aᶜ.card * α_val := by simp [Finset.sum_const]
   -- |E| ≤ ∑_{v ∈ Aᶜ} deg(v) by double counting (each edge contributes at least 1 to LHS)
   have hE_le : G.edgeFinset.card ≤ ∑ v ∈ Aᶜ, G.degree v := by
     -- Every edge has at least one endpoint in Aᶜ, so E ⊆ ⋃_{v ∈ Aᶜ} incidence(v)
@@ -1063,7 +1063,7 @@ theorem erdos_gallai_A_ge_two_thirds_T {m n : ℕ}
     -- The integral layer hypothesis: A ≥ (4/3) · C
     (hA : A ≥ 4 / 3 * Real.sqrt (erdos_gallai_C_sq α β))
     -- Non-degeneracy: f'(1) ≠ f'(-1)
-    (hne : erdos_gallai_deriv_at_one α β ≠ erdos_gallai_deriv_at_neg_one α β) :
+    (_hne : erdos_gallai_deriv_at_one α β ≠ erdos_gallai_deriv_at_neg_one α β) :
     A ≥ 2 / 3 * erdos_gallai_T α β := by
   -- Abbreviate
   let f1 := erdos_gallai_deriv_at_one α β
@@ -1213,7 +1213,7 @@ theorem erdos_gallai_f_nonneg {m n : ℕ} (α : Fin m → ℝ) (β : Fin n → �
   · exact Finset.prod_nonneg fun j _ => by nlinarith [hβ j, hx.1]
 
 /-- For x ∈ [-1, 1] and αᵢ ≥ 1: αᵢ² - x² ≥ αᵢ² - 1. -/
-theorem sq_sub_sq_ge {a x : ℝ} (ha : 1 ≤ a) (hx : x ∈ Set.Icc (-1 : ℝ) 1) :
+theorem sq_sub_sq_ge {a x : ℝ} (_ha : 1 ≤ a) (hx : x ∈ Set.Icc (-1 : ℝ) 1) :
     a ^ 2 - 1 ≤ a ^ 2 - x ^ 2 := by
   nlinarith [hx.1, hx.2]
 
