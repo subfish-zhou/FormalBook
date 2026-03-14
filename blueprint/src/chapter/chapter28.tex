@@ -184,6 +184,7 @@ two ways provides an unexpected and simple answer.
   where $H_n = \sum_{i=1}^{n} \frac{1}{i}$ is the $n$-th harmonic number.
 \end{theorem}
 \begin{proof}
+  \leanok
   \uses{double_counting}
   Consider the matrix $A$ (as above) for the integers $1$ up to $n$. Counting by
   columns we get $\sum_{j=1}^{n} t(j)$. How many $1$'s are in row $i$? Easy enough, the
@@ -281,6 +282,7 @@ result of Istv\'an Reiman.
   \]
 \end{theorem}
 \begin{proof}
+  \leanok
   \uses{double_counting, handshaking}
   The proof follows from the chain of inequalities above: the key combinatorial
   step $\sum \binom{d(u)}{2} \leq \binom{n}{2}$ is established by double counting
@@ -337,6 +339,7 @@ the first interesting case, that of dimension $n = 2$.
   different vertex colors.
 \end{lemma}
 \begin{proof}
+  \leanok
   \uses{handshaking}
   We will prove a stronger statement: The number of tricolored triangles is not only nonzero,
   it is always \emph{odd}.
@@ -369,6 +372,7 @@ With this lemma, it is easy to derive Brouwer's theorem.
   itself has a fixed point (a point $x \in B^2$ with $f(x) = x$).
 \end{theorem}
 \begin{proof}
+  \leanok
   \uses{sperner}
   Let $\Delta$ be the triangle in $\mathbb{R}^3$ with vertices $e_1 = (1,0,0)$,
   $e_2 = (0,1,0)$, and $e_3 = (0,0,1)$. It suffices to prove that every continuous
