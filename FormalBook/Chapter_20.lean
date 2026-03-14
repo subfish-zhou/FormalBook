@@ -38,6 +38,7 @@ Formalization of Chapter 20 from "Proofs from THE BOOK" (Aigner & Ziegler).
 - [x] **Theorem 3** (Mantel's theorem), two proofs:
   - Proof 1 (Cauchy inequality): `mantel`
   - Proof 2 (AM-GM / independent set): `mantel_amgm`
+  - Equality condition: `mantel_eq_adj_degree`
 -/
 
 section Inequalities
@@ -785,6 +786,86 @@ theorem mantel (h: G.CliqueFree 3) : #E ≤ (n^2 / 4) := by
     exact (Nat.le_div_iff_mul_le (Nat.zero_lt_succ 3)).mpr hE
 
 end MantelCauchyProof
+
+section MantelEquality
+
+variable {α : Type*} [Fintype α] [DecidableEq α]
+variable {G : SimpleGraph α} [DecidableRel G.Adj]
+
+local prefix:100 "#" => Finset.card
+local notation "V" => @Finset.univ α _
+local notation "E" => G.edgeFinset
+local notation "I(" v ")" => G.incidenceFinset v
+local notation "d(" v ")" => G.degree v
+local notation "n" => Fintype.card α
+
+/-- Equality condition for Mantel's theorem: if `G` is triangle-free and has exactly `n² / 4`
+edges (encoded as `#E * 4 = n²` to avoid integer-division issues), then every edge has
+endpoint degrees summing to `n`. -/
+theorem mantel_eq_adj_degree (h : G.CliqueFree 3) (heq : #E * 4 = n ^ 2)
+    (i j : α) (hij : G.Adj i j) : d(i) + d(j) = n := by
+
+  -- Sum of degrees of edge endpoints
+  let sum_deg (e : Sym2 α) : ℕ :=
+    Sym2.lift ⟨λ x y ↦ d(x) + d(y), by simp [Nat.add_comm]⟩ e
+
+  -- Triangle-free ⟹ sum_deg e ≤ n for each edge
+  have adj_degree_bnd' : ∀ e ∈ E, sum_deg e ≤ n := by
+    intro e he
+    induction e with | _ v w =>
+      simp at he
+      by_contra hc; push_neg at hc
+      obtain ⟨k, hk⟩ :=
+        Finset.inter_nonempty_of_card_lt_card_add_card (by simp) (by simp) hc
+      simp at hk; obtain ⟨hvk, hwk⟩ := hk
+      exact h {k, w, v} ⟨by aesop (add safe G.adj_symm), by simp [he.ne', hvk.ne', hwk.ne']⟩
+
+  -- Identity: ∑ sum_deg = ∑ d²
+  have sum_sum_deg_eq : ∑ e ∈ E, sum_deg e = ∑ v ∈ V, d(v) ^ 2 := by
+    calc  ∑ e ∈ E, sum_deg e
+      _ = ∑ e ∈ E, ∑ v ∈ e, d(v)                  := Finset.sum_congr rfl (λ e he ↦ by induction e with | _ v w => simp at he; simp [sum_deg, he.ne])
+      _ = ∑ e ∈ E, ∑ v ∈ {v' ∈ V | v' ∈ e}, d(v)  := Finset.sum_congr rfl (by intro e _; exact congrFun (congrArg Finset.sum (by ext; simp)) _)
+      _ = ∑ v ∈ V, ∑ _ ∈ {e ∈ E | v ∈ e}, d(v)    := Finset.sum_sum_bipartiteAbove_eq_sum_sum_bipartiteBelow _ _
+      _ = ∑ v ∈ V, ∑ _ ∈ I(v), d(v)               := Finset.sum_congr rfl (λ v ↦ by simp [G.incidenceFinset_eq_filter v])
+      _ = ∑ v ∈ V, d(v) ^ 2                       := by simp [Nat.pow_two]
+
+  have hn : 0 < n := Fintype.card_pos_iff.mpr ⟨i⟩
+
+  -- Cauchy–Schwarz + handshake: 4 * #E² ≤ (∑ sum_deg) * n
+  have hcs : 4 * #E ^ 2 ≤ (∑ e ∈ E, sum_deg e) * n := by
+    calc 4 * #E ^ 2
+      _ = (2 * #E) ^ 2                             := by ring
+      _ = (∑ v ∈ V, d(v) * 1) ^ 2                  := by simp [G.sum_degrees_eq_twice_card_edges]
+      _ ≤ (∑ v ∈ V, d(v) ^ 2) * (∑ v ∈ V, 1 ^ 2)   := Finset.sum_mul_sq_le_sq_mul_sq V (λ v ↦ d(v)) 1
+      _ = (∑ e ∈ E, sum_deg e) * n                  := by simp [sum_sum_deg_eq]
+
+  -- From heq: (∑ _ ∈ E, n) * n = 4 * #E²
+  have hsum_n : (∑ _ ∈ E, n) * n = 4 * #E ^ 2 := by
+    simp only [Finset.sum_const, smul_eq_mul]
+    calc #E * n * n
+      _ = #E * (n * n) := by ring
+      _ = #E * n ^ 2   := by rw [Nat.pow_two]
+      _ = #E * (#E * 4) := by rw [← heq]
+      _ = 4 * #E ^ 2   := by ring
+
+  -- Each sum_deg e = n: if any were strictly less, the total sum would be too small for
+  -- Cauchy–Schwarz, contradicting the edge-count hypothesis.
+  have hforall : ∀ e ∈ E, sum_deg e = n := by
+    by_contra hc
+    push_neg at hc
+    obtain ⟨e₀, he₀, hne⟩ := hc
+    have hlt : sum_deg e₀ < n := lt_of_le_of_ne (adj_degree_bnd' e₀ he₀) hne
+    have h1 : ∑ e ∈ E, sum_deg e < ∑ _ ∈ E, n :=
+      Finset.sum_lt_sum adj_degree_bnd' ⟨e₀, he₀, hlt⟩
+    have h2 : (∑ e ∈ E, sum_deg e) * n < (∑ _ ∈ E, n) * n :=
+      Nat.mul_lt_mul_of_pos_right h1 hn
+    linarith
+
+  -- Apply to the edge {i, j}
+  have hedge : s(i, j) ∈ E := G.mem_edgeFinset.mpr (G.mem_edgeSet.mpr hij)
+  exact hforall s(i, j) hedge
+
+end MantelEquality
 
 section MantelAMGMProof
 
