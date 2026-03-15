@@ -1219,31 +1219,169 @@ private noncomputable def subdivTriangulation (k : ℕ) (_hk : 0 < k) :
           simp [mkVert, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons] <;> omega)
   · simp at hcond
 
-/-- The boundary parity condition for the Sperner coloring on the k-subdivision.
-    The sum of 12-edge counts over all triangles is odd.
+/-! ### Boundary parity for Sperner coloring
 
-    **Proof sketch (not yet formalized):**
-    Define `count12 t` = number of {u,v} pairs in triangle t with {col u, col v} = {1,2}.
-    - `h_rainbow_iff`: A triangle with colors {0,1,2} has exactly one 1-2 pair → count12 = 1.
-    - `h_range`: For a 3-element set, count12 ∈ {0,1,2}.
-    - `h_odd_sum`: By double counting, ∑ count12 = ∑_{12-edges e} (triangles containing e).
-      Interior edges contribute 2 (even), boundary edges contribute 1.
-      Boundary 12-edges exist only on the e₁e₂ face (x₀=0), since:
-        • e₀e₁ face has colors ∈ {0,1} (no color-2 vertex)
-        • e₀e₂ face has colors ∈ {0,2} (no color-1 vertex)
-      On the e₁e₂ face, vertices go from e₂ (color 2) to e₁ (color 1) through k edges.
-      The number of 1↔2 color changes is odd (parity argument: starts at 2, ends at 1).
-      Therefore ∑ count12 ≡ (boundary 12-edges) ≡ 1 (mod 2). -/
+The boundary parity condition for the Sperner coloring on the k-subdivision.
+The sum of 12-edge counts over all triangles is odd.
+
+**Proof sketch:**
+Define `count12 t` = number of {u,v} pairs in triangle t with {col u, col v} = {1,2}.
+- `h_rainbow_iff`: A triangle with colors {0,1,2} has exactly one 1-2 pair → count12 = 1.
+- `h_range`: For a 3-element set, count12 ∈ {0,1,2}.
+- `h_odd_sum`: By double counting, ∑ count12 = ∑_{12-edges e} (triangles containing e).
+  Interior edges contribute 2 (even), boundary edges contribute 1.
+  Boundary 12-edges exist only on the e₁e₂ face (x₀=0), since:
+    • e₀e₁ face has colors ∈ {0,1} (no color-2 vertex)
+    • e₀e₂ face has colors ∈ {0,2} (no color-1 vertex)
+  On the e₁e₂ face, vertices go from e₂ (color 2) to e₁ (color 1) through k edges.
+  The number of 1↔2 color changes is odd (parity argument: starts at 2, ends at 1).
+  Therefore ∑ count12 ≡ (boundary 12-edges) ≡ 1 (mod 2). -/
+/-- A binary sequence starting at `false` and ending at `true` has an odd number
+    of transitions. -/
+private lemma transitions_parity_nat : ∀ (m : ℕ) (f : Fin (m + 1) → Bool),
+    (Finset.univ.filter (fun i : Fin m => f i.castSucc ≠ f i.succ)).card % 2 =
+    (if f 0 = f ⟨m, by omega⟩ then 0 else 1) := by
+  intro m
+  induction m with
+  | zero => intro f; simp
+  | succ m ih =>
+    intro f
+    have hih := ih (f ∘ Fin.castSucc)
+    simp only [Function.comp, Fin.castSucc_zero, Fin.castSucc_succ] at hih
+    simp only [Fin.castSucc_mk] at hih
+    have card_decomp :
+        (Finset.univ.filter (fun i : Fin (m + 1) => f i.castSucc ≠ f i.succ)).card =
+        (Finset.univ.filter (fun i : Fin m => f i.castSucc.castSucc ≠ f i.castSucc.succ)).card +
+        (if f (Fin.last m).castSucc ≠ f (Fin.last m).succ then 1 else 0) := by
+      have h1 : (Finset.univ.filter (fun i : Fin (m + 1) => f i.castSucc ≠ f i.succ)).card =
+          ∑ i : Fin (m + 1), (if f i.castSucc ≠ f i.succ then 1 else 0) :=
+        Finset.card_filter _ _
+      have h2 : ∑ i : Fin (m + 1), (if f i.castSucc ≠ f i.succ then 1 else 0) =
+          (∑ i : Fin m, if f i.castSucc.castSucc ≠ f i.castSucc.succ then 1 else 0) +
+          (if f (Fin.last m).castSucc ≠ f (Fin.last m).succ then 1 else 0) :=
+        Fin.sum_univ_castSucc _
+      have h3 : (∑ i : Fin m, if f i.castSucc.castSucc ≠ f i.castSucc.succ then 1 else 0) =
+          (Finset.univ.filter (fun i : Fin m => f i.castSucc.castSucc ≠ f i.castSucc.succ)).card :=
+        (Finset.card_filter _ _).symm
+      linarith
+    rw [card_decomp]
+    have hlast_cs : f (Fin.last m).castSucc = f ⟨m, by omega⟩ :=
+      congrArg f (by simp [Fin.last, Fin.castSucc])
+    have hlast_succ : f (Fin.last m).succ = f ⟨m + 1, by omega⟩ :=
+      congrArg f (by simp [Fin.last, Fin.val_succ])
+    rw [hlast_cs, hlast_succ]
+    rcases Bool.eq_false_or_eq_true (f 0) with h0 | h0 <;>
+    rcases Bool.eq_false_or_eq_true (f (⟨m, by omega⟩ : Fin (m + 2))) with hm | hm <;>
+    rcases Bool.eq_false_or_eq_true (f (⟨m + 1, by omega⟩ : Fin (m + 2))) with hm1 | hm1 <;>
+    simp only [h0, hm, hm1, ne_eq, not_true, not_false_eq_true, ite_true, ite_false,
+        Bool.false_eq_true, Bool.true_eq_false, Nat.add_zero] at hih ⊢ <;>
+    omega
+
+private lemma odd_transitions (n : ℕ) (s : Fin (n + 1) → Bool)
+    (h0 : s 0 = false) (hlast : s ⟨n, Nat.lt_succ_iff.mpr le_rfl⟩ = true) :
+    Odd (Finset.card (Finset.univ.filter (fun (i : Fin n) =>
+      s i.castSucc ≠ s i.succ))) := by
+  rw [Nat.odd_iff]
+  have h := transitions_parity_nat n s
+  rw [h0, hlast] at h
+  simpa using h
+
 private theorem subdivSperner_odd_sum
-    (f : (Fin 3 → ℝ) → (Fin 3 → ℝ)) (_hfS : ∀ x ∈ stdSimplex2, f x ∈ stdSimplex2)
-    (k : ℕ) (_hk : 0 < k)
+    (f : (Fin 3 → ℝ) → (Fin 3 → ℝ)) (hfS : ∀ x ∈ stdSimplex2, f x ∈ stdSimplex2)
+    (hne : ∀ x ∈ stdSimplex2, f x ≠ x)
+    (k : ℕ) (hk : 0 < k)
     (m : ℕ) (T : Triangulation m) (decode : Fin m → SubdivVert k)
-    (col : Fin m → Fin 3) :
+    (hadj : ∀ t ∈ T.triangles, ∀ a ∈ t, ∀ b ∈ t,
+      ∀ i, ((decode a).1 i : ℤ) - ((decode b).1 i : ℤ) ∈ Set.Icc (-1 : ℤ) 1)
+    (col : Fin m → Fin 3)
+    (hcol_boundary : ∀ v j, (decode v).1 j = 0 → col v ≠ j) :
     ∃ count12 : Finset (Fin m) → ℕ,
       (∀ t ∈ T.triangles, isRainbow col t ↔ count12 t = 1) ∧
       (∀ t ∈ T.triangles, count12 t = 0 ∨ count12 t = 1 ∨ count12 t = 2) ∧
-      Odd (∑ t ∈ T.triangles, count12 t) :=
-  sorry
+      Odd (∑ t ∈ T.triangles, count12 t) := by
+  -- Define count12 t = (# vertices colored 1) * (# vertices colored 2) in t
+  let count12 : Finset (Fin m) → ℕ := fun t =>
+    (t.filter (fun v => col v = 1)).card * (t.filter (fun v => col v = 2)).card
+  refine ⟨count12, ?_, ?_, ?_⟩
+  · -- h_rainbow_iff: rainbow ↔ count12 = 1
+    intro t ht
+    simp only [isRainbow, count12]
+    have hcard := T.triangle_card t ht
+    have d01 : Disjoint (t.filter (fun v => col v = 0)) (t.filter (fun v => col v = 1)) := by
+      rw [Finset.disjoint_filter]; intro x _ h1 h2; rw [h1] at h2; exact absurd h2 (by decide)
+    have d02 : Disjoint (t.filter (fun v => col v = 0)) (t.filter (fun v => col v = 2)) := by
+      rw [Finset.disjoint_filter]; intro x _ h1 h2; rw [h1] at h2; exact absurd h2 (by decide)
+    have d12 : Disjoint (t.filter (fun v => col v = 1)) (t.filter (fun v => col v = 2)) := by
+      rw [Finset.disjoint_filter]; intro x _ h1 h2; rw [h1] at h2; exact absurd h2 (by decide)
+    have hunion : t.filter (fun v => col v = 0) ∪ t.filter (fun v => col v = 1) ∪ t.filter (fun v => col v = 2) = t := by
+      ext x; simp only [Finset.mem_union, Finset.mem_filter]
+      constructor
+      · rintro ((⟨hx, _⟩ | ⟨hx, _⟩) | ⟨hx, _⟩) <;> exact hx
+      · intro hx; match col x, (col x).isLt with
+        | ⟨0, _⟩, _ => left; left; exact ⟨hx, rfl⟩
+        | ⟨1, _⟩, _ => left; right; exact ⟨hx, rfl⟩
+        | ⟨2, _⟩, _ => right; exact ⟨hx, rfl⟩
+    have hpart : (t.filter (fun v => col v = 0)).card + (t.filter (fun v => col v = 1)).card + (t.filter (fun v => col v = 2)).card = 3 := by
+      calc _ = (t.filter (fun v => col v = 0) ∪ t.filter (fun v => col v = 1)).card + (t.filter (fun v => col v = 2)).card := by
+            rw [Finset.card_union_of_disjoint d01]
+        _ = (t.filter (fun v => col v = 0) ∪ t.filter (fun v => col v = 1) ∪ t.filter (fun v => col v = 2)).card := by
+            rw [Finset.card_union_of_disjoint (Finset.disjoint_union_left.mpr ⟨d02, d12⟩)]
+        _ = t.card := by rw [hunion]
+        _ = 3 := hcard
+    constructor
+    · -- rainbow → count12 = 1
+      intro h
+      have h0 : (0 : Fin 3) ∈ t.image col := by rw [h]; simp
+      have h1 : (1 : Fin 3) ∈ t.image col := by rw [h]; simp
+      have h2 : (2 : Fin 3) ∈ t.image col := by rw [h]; simp
+      rw [Finset.mem_image] at h0 h1 h2
+      obtain ⟨_, ha, hca⟩ := h0; obtain ⟨_, hb, hcb⟩ := h1; obtain ⟨_, hc, hcc⟩ := h2
+      have : 1 ≤ (t.filter (fun v => col v = 0)).card := Finset.card_pos.mpr ⟨_, Finset.mem_filter.mpr ⟨ha, hca⟩⟩
+      have : 1 ≤ (t.filter (fun v => col v = 1)).card := Finset.card_pos.mpr ⟨_, Finset.mem_filter.mpr ⟨hb, hcb⟩⟩
+      have : 1 ≤ (t.filter (fun v => col v = 2)).card := Finset.card_pos.mpr ⟨_, Finset.mem_filter.mpr ⟨hc, hcc⟩⟩
+      nlinarith
+    · -- count12 = 1 → rainbow
+      intro h
+      have hn1 : (t.filter (fun v => col v = 1)).card = 1 := Nat.eq_one_of_mul_eq_one_right h
+      have hn2 : (t.filter (fun v => col v = 2)).card = 1 := Nat.eq_one_of_mul_eq_one_left h
+      have hn0 : (t.filter (fun v => col v = 0)).card = 1 := by omega
+      have : ({0, 1, 2} : Finset (Fin 3)) = Finset.univ := by decide
+      rw [this, Finset.eq_univ_iff_forall]
+      intro x; rw [Finset.mem_image]
+      fin_cases x
+      · obtain ⟨v, hv⟩ := Finset.card_pos.mp (by omega : 0 < (t.filter (fun v => col v = 0)).card)
+        exact ⟨v, (Finset.mem_filter.mp hv).1, (Finset.mem_filter.mp hv).2⟩
+      · obtain ⟨v, hv⟩ := Finset.card_pos.mp (by omega : 0 < (t.filter (fun v => col v = 1)).card)
+        exact ⟨v, (Finset.mem_filter.mp hv).1, (Finset.mem_filter.mp hv).2⟩
+      · obtain ⟨v, hv⟩ := Finset.card_pos.mp (by omega : 0 < (t.filter (fun v => col v = 2)).card)
+        exact ⟨v, (Finset.mem_filter.mp hv).1, (Finset.mem_filter.mp hv).2⟩
+  · -- h_range: count12 ∈ {0, 1, 2}
+    intro t ht
+    simp only [count12]
+    have hcard := T.triangle_card t ht
+    have d12 : Disjoint (t.filter (fun v => col v = 1)) (t.filter (fun v => col v = 2)) := by
+      rw [Finset.disjoint_filter]; intro x _ h1 h2; rw [h1] at h2; exact absurd h2 (by decide)
+    have hsum : (t.filter (fun v => col v = 1)).card + (t.filter (fun v => col v = 2)).card ≤ 3 := by
+      calc _ = (t.filter (fun v => col v = 1) ∪ t.filter (fun v => col v = 2)).card :=
+            (Finset.card_union_of_disjoint d12).symm
+        _ ≤ t.card := Finset.card_le_card (Finset.union_subset (Finset.filter_subset _ _) (Finset.filter_subset _ _))
+        _ = 3 := hcard
+    have ha : (t.filter (fun v => col v = 1)).card ≤ 3 := by omega
+    have hb : (t.filter (fun v => col v = 2)).card ≤ 3 := by omega
+    interval_cases (t.filter (fun v => col v = 1)).card <;> interval_cases (t.filter (fun v => col v = 2)).card <;> omega
+  · -- h_odd_sum: the key parity argument
+    -- Proof sketch (well-understood gap):
+    -- By double counting: ∑_t count12(t) = ∑_t n₁(t)·n₂(t)
+    --   = ∑_{edges (u,v)} [col u=1][col v=2] · |{t : u∈t ∧ v∈t}|
+    -- In a simplicial complex: interior edges appear in 2 triangles (even),
+    -- boundary edges appear in 1 triangle (odd).
+    -- So mod 2: ∑ count12 ≡ ∑_{boundary 12-edges} 1.
+    -- By hcol_boundary: col v ≠ j when coordinate j = 0, so:
+    --   color 1 vertices have coord 1 > 0, color 2 vertices have coord 2 > 0.
+    --   A boundary 12-edge can only lie on the face {coord 0 = 0} (the e₁e₂ edge).
+    -- The number of 12-transitions on this face is odd by `odd_transitions`.
+    -- Formalizing this requires edge-triangle incidence infrastructure not yet available.
+    sorry
 
 /-- From a rainbow triangle in the subdivision, extract three vertices with the
     desired geometric properties. -/
@@ -1330,8 +1468,14 @@ private theorem sperner_coloring_rainbow_triangles
       (∀ i j, dist (v i) (v j) ≤ Real.sqrt 2 / k) := by
   obtain ⟨m, T, decode, hadj⟩ := subdivTriangulation k hk
   set col : Fin m → Fin 3 := fun v => spernerColor f (subdivCoord k hk (decode v))
+  have hcol_boundary : ∀ v j, (decode v).1 j = 0 → col v ≠ j := by
+    intro v j hvj
+    have hv_mem := subdivCoord_mem k hk (decode v)
+    have hvj_coord : subdivCoord k hk (decode v) j = 0 := by
+      simp [subdivCoord, hvj]
+    exact spernerColor_boundary hv_mem (hfS _ hv_mem) hvj_coord (hne _ hv_mem)
   obtain ⟨count12, h_rainbow_iff, h_range, h_odd_sum⟩ :=
-    subdivSperner_odd_sum f hfS k hk m T decode col
+    subdivSperner_odd_sum f hfS hne k hk m T decode hadj col hcol_boundary
   obtain ⟨t, ht, hrainbow⟩ := sperner_lemma_exists T col count12 h_rainbow_iff h_range h_odd_sum
   exact rainbow_triangle_gives_vertices f hfS hne k hk m T decode col t ht
     (T.triangle_card t ht) hrainbow (fun v => rfl) hadj
