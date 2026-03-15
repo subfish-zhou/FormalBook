@@ -622,22 +622,105 @@ private theorem sperner_coloring_rainbow_triangles
   -- On that face, odd_transitions gives an odd number of 1↔2 transitions.
   have h_odd_sum_concrete : Odd (∑ t ∈ T.triangles,
       (t.filter (fun v => col v = 1)).card * (t.filter (fun v => col v = 2)).card) := by
-    sorry -- Edge-triangle incidence for concrete triangulation
-    -- Proof outline:
-    -- 1. Double counting: ∑_t n₁(t)·n₂(t) = ∑_{(u,v): col u=1, col v=2} codegree(u,v)
-    --    where codegree(u,v) = |{t ∈ triangles : u ∈ t ∧ v ∈ t}|
-    -- 2. For the regular k-subdivision (allTris from subdivTriangulation):
-    --    - Interior edges have codegree 2 (shared by up-triangle and down-triangle)
-    --    - Boundary edges have codegree 1 (belong to exactly one triangle)
-    -- 3. Therefore mod 2: ∑ n₁·n₂ ≡ #{boundary 12-edges} (mod 2)
-    -- 4. Boundary 12-edges only exist on the e₁e₂ face (coord 0 = 0):
-    --    - On e₀e₁ face (coord 2 = 0): hcol_boundary gives col v ≠ 2, so no color-2 vertex
-    --    - On e₀e₂ face (coord 1 = 0): hcol_boundary gives col v ≠ 1, so no color-1 vertex
-    -- 5. On e₁e₂ face: vertices (0, j, k-j) for j = 0..k, boundary says col ≠ 0
-    --    so colors ∈ {1,2}. At j=0: (0,0,k) has coord 1 = 0, so col ≠ 1, hence col = 2.
-    --    At j=k: (0,k,0) has coord 2 = 0, so col ≠ 2, hence col = 1.
-    --    By odd_transitions, the number of color changes is odd.
-    -- 6. Each color change is a boundary 12-edge, so #{boundary 12-edges} is odd. ∎
+    sorry
+    /-
+    ## Edge-triangle incidence parity (sorry analysis)
+
+    ### What this sorry needs to prove
+
+    `Odd (∑ t ∈ T.triangles, n₁(t) * n₂(t))`
+    where n₁(t) = |{v ∈ t | col v = 1}|, n₂(t) = |{v ∈ t | col v = 2}|.
+
+    This corresponds directly to the tex proof of Sperner's lemma (§ Sperner's Lemma
+    in chapter28.tex), specifically the "partial dual graph" argument using
+    the handshaking lemma (equation (4)).
+
+    ### Mathematical proof (correct, follows tex)
+
+    1. **Sum-swap (double counting).**
+       ∑_t n₁(t)·n₂(t) = ∑_{(u,v): col u=1, col v=2} codeg(u,v)
+       where codeg(u,v) = |{t ∈ T.triangles : u ∈ t ∧ v ∈ t}|.
+
+    2. **Codegree analysis for the regular k-subdivision.**
+       Triangles are of two types:
+       - Up-triangle ▲(i,j): vertices {(i,j), (i+1,j), (i,j+1)}, exists when i+j < k
+       - Down-triangle ▽(i,j): vertices {(i+1,j), (i,j+1), (i+1,j+1)}, exists when i+j+1 < k
+
+       Edges come in three types (by coordinate difference):
+       - Type A: (i,j)↔(i+1,j) — in ▲(i,j) [if i+j<k] and ▽(i,j-1) [if j>0 ∧ i+j<k]
+       - Type B: (i,j)↔(i,j+1) — in ▲(i,j) [if i+j<k] and ▽(i-1,j) [if i>0 ∧ i+j<k]
+       - Type C: (i+1,j)↔(i,j+1) — in ▲(i,j) [if i+j<k] and ▽(i,j) [if i+j+1<k]
+
+       Boundary edges (codeg = 1):
+       - Type A with j=0 (on e₀e₁ face, coord 1 = 0)
+       - Type B with i=0 (on e₁e₂ face, coord 0 = 0)
+       - Type C with i+j+1=k (on e₀e₂ face, coord 2 = 0)
+
+       Interior edges (codeg = 2): all others.
+
+    3. **Mod 2:** ∑ n₁·n₂ ≡ #{boundary 12-edges} (mod 2).
+
+    4. **Boundary 12-edges only on e₁e₂ face (coord 0 = 0).**
+       - e₀e₁ face (coord 2 = 0): hcol_boundary ⟹ col ≠ 2, so no color-2 vertex → no 12-pair
+       - e₀e₂ face (coord 1 = 0): hcol_boundary ⟹ col ≠ 1, so no color-1 vertex → no 12-pair
+       - e₁e₂ face (coord 0 = 0): col ∈ {1,2}. First vertex (0,0,k) → col=2,
+         last vertex (0,k,0) → col=1. By `odd_transitions`, odd number of changes.
+
+    5. **∴** ∑ n₁·n₂ is odd. ∎
+
+    ### Why formalization failed (5 worker attempts)
+
+    The core obstacle is **Step 1 (sum-swap)** in Lean 4 / Mathlib.
+
+    `allTris` is defined as a 3-layer `Finset.biUnion` over `SubdivVert k`:
+    ```
+    allTris = Finset.univ.biUnion (fun v0 =>
+      Finset.univ.biUnion (fun v1 =>
+        Finset.univ.biUnion (fun v2 => if ... then {t} else ∅)))
+    ```
+
+    To perform the sum-swap, we need:
+    ```
+    ∑ t ∈ allTris, ∑ u ∈ t, ∑ v ∈ t, [col u = 1] * [col v = 2]
+    = ∑ u : Fin m, ∑ v : Fin m, [col u = 1] * [col v = 2] * codeg(u,v)
+    ```
+
+    This requires:
+    (a) `Finset.sum_biUnion` with disjointness proof — but allTris may have duplicate
+        entries from different (v0,v1,v2) triples producing the same set
+    (b) Expressing `u ∈ t` for `t ∈ allTris` requires unwinding the 3-layer biUnion
+    (c) `codeg(u,v)` requires enumerating all triangles containing a given pair,
+        which means solving `∃ i j, ...` conditions for each edge type
+
+    **Step 2 (codegree = 1 or 2)** is also difficult because it requires:
+    (a) Case-splitting on edge type (A/B/C)
+    (b) For each type, showing exactly which ▲ and ▽ contain the edge
+    (c) Proving these are the ONLY triangles containing the edge (exhaustive search
+        over the biUnion definition)
+
+    Each sub-step is individually provable but requires ~50-100 lines of Lean.
+    The total proof would be ~300-500 lines of mechanical Finset manipulation.
+
+    ### Possible remediation approaches
+
+    1. **Redefine allTris** using `Finset.image` over `Fin k × Fin k` (up-triangles)
+       and `Fin k × Fin k` (down-triangles) separately, instead of 3-layer biUnion.
+       This would make membership and codegree proofs much more tractable.
+
+    2. **Add codegree as a field of SubdivData**, proved directly in `subdivTriangulation`
+       where `allTris`, `encode`, `mkVert` are all in scope.
+
+    3. **Use ZMod 2 linear algebra** to avoid explicit codegree computation:
+       define the incidence matrix over ZMod 2 and use matrix rank arguments.
+
+    4. **Path-tracing argument**: bypass the sum entirely, directly construct a
+       rainbow triangle by following the dual-graph path from a boundary 12-edge
+       using well-founded recursion on visited triangle count.
+
+    Note: The Brouwer FPT is independently proved via covering spaces in
+    `Ch28/BrouwerCovering.lean` (sorry-free). This Sperner route is the
+    tex-aligned alternative proof.
+    -/
   obtain ⟨count12, h_rainbow_iff, h_range, h_odd_sum⟩ :=
     subdivSperner_odd_sum f hfS hne k hk m T decode hadj col hcol_boundary h_odd_sum_concrete
   obtain ⟨t, ht, hrainbow⟩ := sperner_lemma_exists T col count12 h_rainbow_iff h_range h_odd_sum
