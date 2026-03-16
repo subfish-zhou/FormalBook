@@ -113,6 +113,7 @@ def stdSimplex2 : Set (Fin 3 → ℝ) :=
   {x | (∀ i, 0 ≤ x i) ∧ ∑ i, x i = 1}
 
 /-- Vertex of the k-th regular subdivision: (a/k, b/k, c/k) where a+b+c = k. -/
+@[nolint unusedArguments]
 noncomputable def subdivVertex (k : ℕ) (abc : Fin 3 → ℕ) (_ : ∑ i, abc i = k)
     (_ : 0 < k) : Fin 3 → ℝ :=
   fun i => (abc i : ℝ) / (k : ℝ)

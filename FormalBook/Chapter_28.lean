@@ -649,6 +649,7 @@ noncomputable def reimanGraph : SimpleGraph (PG2 p) where
   loopless := by intro v ⟨h, _⟩; exact h rfl
 
 /-- The number of vertices of Gp is p² + p + 1. -/
+@[nolint unusedArguments]
 theorem reimanGraph_card_vertices (_ : Odd p) :
     Nat.card (PG2 p) = p ^ 2 + p + 1 := by
   have hfr : Module.finrank (ZMod p) (Fin 3 → ZMod p) = 3 := by
@@ -684,6 +685,7 @@ lemma orthogonal_both_eq_cross {F : Type*} [Field F] [DecidableEq F]
 
     This is the projective geometry fact that two distinct hyperplanes in PG(2,p) meet
     in exactly one point. -/
+@[nolint unusedArguments]
 theorem reimanGraph_no_C4 :
     ∀ (a b c d : PG2 p),
       a ≠ b → a ≠ c → a ≠ d → b ≠ c → b ≠ d → c ≠ d →
