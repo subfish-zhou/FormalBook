@@ -10,7 +10,7 @@ chapters.
 
 \begin{theorem}[Pigeon-hole principle]
   \label{pigeon_hole_principle}
-  \lean{chapter28.pigeon\_hole\_principle}
+  \lean{chapter28.pigeon_hole_principle}
   If $n$ objects are placed in $r$ boxes, where $r < n$, then at least one of the boxes contains
   more than one object.
 \end{theorem}
@@ -35,7 +35,7 @@ $n = \sum_{a \in R} |f^{-1}(a)| < r \cdot \frac{n}{r} = n$, which cannot be.
 
 \begin{theorem}[Claim]
   \label{ch28claim1}
-  \lean{chapter28.claim1\_coprime}
+  \lean{chapter28.claim1_coprime}
   Consider the numbers $1, 2, 3, \dots, 2n$, and take any $n + 1$
   of them. Then there are two among these $n + 1$ numbers which are
   relatively prime.
@@ -51,7 +51,7 @@ But let us now turn the condition around.
 
 \begin{theorem}[Claim]
   \label{ch28claim2}
-  \lean{chapter28.claim2\_divisible}
+  \lean{chapter28.claim2_divisible}
   Suppose again $A \subset \{1, 2, \dots, 2n\}$ with $|A| = n+1$. Then
   there are always two numbers in $A$ such that one divides the other.
 \end{theorem}
@@ -67,7 +67,7 @@ But let us now turn the condition around.
 
 \begin{theorem}[Claim (Erd\H{o}s--Szekeres)]
   \label{ch28claim3}
-  \lean{chapter28.claim3\_erdos\_szekeres}
+  \lean{chapter28.claim3_erdos_szekeres}
   In any sequence $a_1, a_2, \ldots, a_{mn+1}$ of $mn+1$ distinct real numbers,
   there exists an increasing subsequence
   \[
@@ -102,7 +102,7 @@ But let us now turn the condition around.
 
 \begin{theorem}[Claim]
   \label{ch28claim4}
-  \lean{chapter28.claim4\_contiguous\_sum}
+  \lean{chapter28.claim4_contiguous_sum}
   Suppose we are given $n$ integers $a_1, \dots, a_n$, which need not be distinct.
   Then there is always a set of consecutive numbers $a_{k+1}, a_{k+2}, \dots, a_{\ell}$
   whose sum $\sum_{i=k+1}^{\ell} a_i$ is a multiple of $n$.
@@ -128,7 +128,7 @@ the following.
 
 \begin{theorem}[Double counting]
   \label{double_counting}
-  \lean{chapter28.double\_counting}
+  \lean{chapter28.double_counting}
   Suppose that we are given two finite sets $R$ and $C$ and a subset $S \subseteq R \times C$.
   Whenever $(p, q) \in S$, then we say $p$ and $q$ are incident.
   If $r_p$ denotes the number of elements that are incident to $p \in R$, and $c_q$
@@ -172,7 +172,7 @@ two ways provides an unexpected and simple answer.
 
 \begin{theorem}[Average number of divisors]
   \label{ch28_avg_divisors}
-  \lean{chapter28.sum\_divisor\_count}
+  \lean{chapter28.sum_divisor_count}
   For any positive integer $n$,
   \[
   \sum_{j=1}^{n} t(j) = \sum_{i=1}^{n} \left\lfloor \frac{n}{i} \right\rfloor.
@@ -275,7 +275,7 @@ result of Istv\'an Reiman.
 
 \begin{theorem}[Reiman]
   \label{ch28theorem}
-  \lean{chapter28.c4\_free\_edge\_bound}
+  \lean{chapter28.c4_free_edge_bound}
   If the graph $G$ on $n$ vertices contains no $4$-cycles, then
   \[
   |E| \leq \left\lfloor \frac{n}{4}\left(1 + \sqrt{4n - 3}\right) \right\rfloor. \tag{6}
@@ -292,7 +292,7 @@ result of Istv\'an Reiman.
 
 \begin{theorem}[Cherry counting]
   \label{ch28_sum_choose}
-  \lean{chapter28.sum\_choose\_deg\_le\_choose\_card}
+  \lean{chapter28.sum_choose_deg_le_choose_card}
   \leanok
   If the graph $G$ on $n$ vertices contains no $4$-cycles, then
   \[
@@ -328,7 +328,7 @@ the first interesting case, that of dimension $n = 2$.
 
 \begin{lemma}[Sperner's Lemma]
   \label{sperner}
-  \lean{chapter28.sperner\_lemma}
+  \lean{chapter28.sperner_lemma}
   Suppose that some ``big'' triangle with vertices $V_1, V_2, V_3$ is triangulated
   (that is, decomposed into a finite number of ``small'' triangles that fit together edge-by-edge).
   Assume that the vertices in the triangulation get ``colors'' from the set $\{1, 2, 3\}$ such that
@@ -367,7 +367,7 @@ With this lemma, it is easy to derive Brouwer's theorem.
 
 \begin{theorem}[Brouwer's Fixed Point Theorem (for $n = 2$)]
   \label{brouwer}
-  \lean{chapter28.brouwer\_fixed\_point\_2d}
+  \lean{chapter28.brouwer_fixed_point_2d}
   Every continuous function $f : B^2 \to B^2$ of a $2$-dimensional ball to
   itself has a fixed point (a point $x \in B^2$ with $f(x) = x$).
 \end{theorem}
