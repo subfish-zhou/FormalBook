@@ -112,12 +112,6 @@ analytic fixed-point conclusion.
 def stdSimplex2 : Set (Fin 3 → ℝ) :=
   {x | (∀ i, 0 ≤ x i) ∧ ∑ i, x i = 1}
 
-/-- Vertex of the k-th regular subdivision: (a/k, b/k, c/k) where a+b+c = k. -/
-@[nolint unusedArguments]
-noncomputable def subdivVertex (k : ℕ) (abc : Fin 3 → ℕ) (_ : ∑ i, abc i = k)
-    (_ : 0 < k) : Fin 3 → ℝ :=
-  fun i => (abc i : ℝ) / (k : ℝ)
-
 /-- The Sperner coloring for a continuous self-map of Δ².  Given v ∈ Δ² and
     f : Δ² → Δ², color(v) = min {i | f(v)ᵢ < vᵢ}.  Well-defined when f(v) ≠ v
     and ∑ f(v)ᵢ = ∑ vᵢ = 1. When f(v) = v, we default to 0. -/

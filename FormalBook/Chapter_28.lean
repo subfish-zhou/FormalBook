@@ -648,9 +648,10 @@ noncomputable def reimanGraph : SimpleGraph (PG2 p) where
     exact ⟨hne.symm, Projectivization.orthogonal_comm.mp horth⟩
   loopless := by intro v ⟨h, _⟩; exact h rfl
 
-/-- The number of vertices of Gp is p² + p + 1. -/
-@[nolint unusedArguments]
-theorem reimanGraph_card_vertices (_ : Odd p) :
+/-- The number of vertices of Gp is p² + p + 1.
+    Note: The tex assumes p is an odd prime, but oddness is not needed for the cardinality
+    formula — only that p is a prime (hence ZMod p is a field). -/
+theorem reimanGraph_card_vertices :
     Nat.card (PG2 p) = p ^ 2 + p + 1 := by
   have hfr : Module.finrank (ZMod p) (Fin 3 → ZMod p) = 3 := by
     simp
@@ -684,14 +685,17 @@ lemma orthogonal_both_eq_cross {F : Type*} [Field F] [DecidableEq F]
     distinct points intersect in at most a single projective point.
 
     This is the projective geometry fact that two distinct hyperplanes in PG(2,p) meet
-    in exactly one point. -/
-@[nolint unusedArguments]
+    in exactly one point.
+
+    Note: The tex states this for 4 *distinct* vertices (6 pairwise ≠ conditions), but the
+    proof only needs a ≠ c and b ≠ d.  The other four ≠ conditions follow from Adj being
+    irreflexive (loopless graph). -/
 theorem reimanGraph_no_C4 :
     ∀ (a b c d : PG2 p),
-      a ≠ b → a ≠ c → a ≠ d → b ≠ c → b ≠ d → c ≠ d →
+      a ≠ c → b ≠ d →
       ¬((reimanGraph p).Adj a b ∧ (reimanGraph p).Adj b c ∧
         (reimanGraph p).Adj c d ∧ (reimanGraph p).Adj d a) := by
-  intro a b c d _hab hac _had _hbc hbd _hcd
+  intro a b c d hac hbd
   rintro ⟨⟨_, hab_orth⟩, ⟨_, hbc_orth⟩, ⟨_, hcd_orth⟩, ⟨_, hda_orth⟩⟩
   -- b and d are both orthogonal to a and c. Since a ≠ c, both equal cross a c.
   have hb := orthogonal_both_eq_cross hac
