@@ -211,7 +211,7 @@ lemma upper_bound_sum {n k : ℕ} (h2k : 2 * k ≤ n)
         simp [Finset.sum_const, Finset.card_univ, Fintype.card_perm,
           Fintype.card_fin, mul_comm]
 
-lemma circularArc_card {n k : ℕ} (hk : k ≤ n) (_hn : 0 < n) (i : Fin n) :
+lemma circularArc_card {n k : ℕ} (hk : k ≤ n) (i : Fin n) :
     (circularArc k i).card = k := by
   unfold circularArc
   rw [Finset.card_image_of_injOn]
@@ -223,7 +223,7 @@ lemma circularArc_card {n k : ℕ} (hk : k ≤ n) (_hn : 0 < n) (i : Fin n) :
     rw [Nat.mod_eq_of_lt (by omega : j₁ < n), Nat.mod_eq_of_lt (by omega : j₂ < n)] at this
     exact this
 
-lemma count_perms_fixing_arc {n k : ℕ} (_hk : k ≤ n) (i : Fin n) (A : Finset (Fin n))
+lemma count_perms_fixing_arc {n k : ℕ} (i : Fin n) (A : Finset (Fin n))
     (hA : A.card = k) (hcirc : (circularArc k i).card = k) :
     (Finset.univ.filter (fun σ : Equiv.Perm (Fin n) => permArc k σ i = A)).card =
       k.factorial * (n - k).factorial := by
@@ -319,7 +319,7 @@ lemma lower_bound_sum {n k : ℕ} (_h2k : 2 * k ≤ n)
         (Finset.univ.filter (fun σ : Equiv.Perm (Fin n) => permArc k σ i = A)).card := by
         apply Finset.sum_congr rfl
         intro A hA
-        rw [count_perms_fixing_arc hk i A (hSized hA) (circularArc_card hk hn' i)]
+        rw [count_perms_fixing_arc i A (hSized hA) (circularArc_card hk i)]
     _ ≤ (Finset.univ.filter (fun σ => permArc k σ i ∈ 𝒜)).card := by
         rw [← Finset.card_biUnion]
         · apply Finset.card_le_card

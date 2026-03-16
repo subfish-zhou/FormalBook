@@ -26,7 +26,7 @@ namespace chapter30
 /-! ## Theorem 1: Sperner's theorem -/
 
 /-- **Sperner's theorem.** -/
-theorem sperner {α : Type*} [Fintype α] [DecidableEq α]
+theorem sperner {α : Type*} [Fintype α]
     (𝒜 : Finset (Finset α)) (h𝒜 : IsAntichain (· ⊆ ·) (SetLike.coe 𝒜)) :
     𝒜.card ≤ (Fintype.card α).choose (Fintype.card α / 2) :=
   h𝒜.sperner
