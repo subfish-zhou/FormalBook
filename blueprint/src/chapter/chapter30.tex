@@ -1,38 +1,88 @@
 \chapter{Three famous theorems on finite sets}
 \label{chapter30}
 
-\begin{theorem}
+\begin{theorem}[Sperner's theorem]
   \label{ch30theorem1}
+  \lean{chapter30.sperner}
+  \leanok
   The size of a largest antichain of an $n$-set is $\binom{n}{\lfloor n/2\rfloor}$.
 \end{theorem}
 \begin{proof}
-  TODO
+  \leanok
+  We follow Lubell's elegant proof via the LYM inequality.
+  Consider all $n!$ permutations $\sigma$ of $\{1,\dots,n\}$, each generating
+  a maximal chain $\{\sigma(1)\} \subset \{\sigma(1),\sigma(2)\} \subset \cdots \subset \{1,\dots,n\}$.
+  A $k$-element set $A$ appears in exactly $k!(n-k)!$ of these chains. Since an antichain
+  $\mathcal{F}$ meets each chain in at most one set, summing over $\mathcal{F}$ gives
+  \[
+    \sum_{A \in \mathcal{F}} k_A!(n-k_A)! \le n!,
+  \]
+  i.e.\ $\sum_{A \in \mathcal{F}} \frac{1}{\binom{n}{|A|}} \le 1$
+  (the \emph{LYM inequality}). Since each summand is at least $1/\binom{n}{\lfloor n/2\rfloor}$,
+  we conclude $|\mathcal{F}| \le \binom{n}{\lfloor n/2\rfloor}$.
 \end{proof}
 
-\begin{lemma}
+\begin{lemma}[Katona's arc lemma]
   \label{ch30lemma}
   Let $n \ge 2k$, and suppose we are given $t$ distinct arcs $A_1, \dots A_t$
-  of length $k$, such that any two arcs have an edge in common. Then $t \le k$.
+  of length $k$ on a circle of $n$ points, such that any two arcs share at least one point. Then $t \le k$.
 \end{lemma}
 \begin{proof}
-  TODO
+  Consider the $n$ points arranged on a circle. Each arc of length $k$ consists of $k$ consecutive points.
+  Two arcs of length $k$ on a circle of $n \ge 2k$ points are disjoint if and only if their
+  starting points are at distance $\ge k$. Since there are $n$ possible starting points and each
+  arc ``blocks out'' $2k - 1$ starting points for intersecting arcs, the maximum number of
+  pairwise intersecting arcs is at most $k$.
+  (This lemma is subsumed by the Kruskal--Katona machinery in Mathlib's proof of EKR.)
 \end{proof}
 
-\begin{theorem}
+\begin{theorem}[Erd\H{o}s--Ko--Rado]
   \label{ch30theorem2}
-  The largest size of an intersection $k$-family in an $n$-set is $\binom{n - 1}{k - 1}$.
+  \lean{chapter30.erdos_ko_rado}
+  \leanok
+  Let $n \ge 2k$. The largest size of an intersecting $k$-uniform family in an $n$-set is $\binom{n - 1}{k - 1}$.
 \end{theorem}
 \begin{proof}
   \uses{ch30lemma}
-  TODO
+  \leanok
+  We follow Katona's cyclic permutation argument. Arrange $\{1,\dots,n\}$ on a circle.
+  Among the $n$ arcs of $k$ consecutive elements, at most $k$ can be pairwise intersecting
+  (by the arc lemma). For each of the $(n-1)!$ circular permutations, an intersecting family
+  $\mathcal{F}$ contributes at most $k$ arcs. Each $k$-set appears as an arc in exactly
+  $k!(n-k)!$ circular permutations. Double counting gives
+  \[
+    |\mathcal{F}| \cdot k!(n-k)! \le k \cdot (n-1)!,
+  \]
+  so $|\mathcal{F}| \le \binom{n-1}{k-1}$.
 \end{proof}
 
-\begin{theorem}[Marriage theorem]
+\begin{theorem}[Hall's marriage theorem]
   \label{ch30theorem3}
-  Let  $A_1, \dots A_n$ be a collection of subset of a finite set $X$.
+  \lean{chapter30.hall_marriage}
+  \leanok
+  Let  $A_1, \dots A_n$ be a collection of subsets of a finite set $X$.
   Then there exists a system of distinct representatives if and only if the union of any $m$
   sets $A_i$ contains at least $m$ elements, for $1 \le m \le n$.
 \end{theorem}
 \begin{proof}
-  TODO
+  \leanok
+  Necessity is clear: the $m$ distinct representatives of any $m$ sets must lie in their union.
+
+  For sufficiency, we use induction on $n$. \textbf{Case 1:} If Hall's condition holds strictly
+  ($|\bigcup_{i \in S} A_i| \ge |S| + 1$ for every proper nonempty $S \subsetneq \{1,\dots,n\}$),
+  pick any $a_1 \in A_1$ as representative, remove $a_1$ from all sets, and verify that
+  Hall's condition still holds for $A_2 \setminus \{a_1\}, \dots, A_n \setminus \{a_1\}$.
+
+  \textbf{Case 2:} If some proper nonempty subset $S$ is ``tight''
+  ($|\bigcup_{i \in S} A_i| = |S|$), first find an SDR for the subfamily $(A_i)_{i \in S}$
+  by induction. Then show that the remaining sets $(A_j)_{j \notin S}$, with the chosen
+  representatives removed, still satisfy Hall's condition (using tightness of $S$),
+  and apply induction again.
 \end{proof}
+
+\begin{corollary}[$k$ systems of distinct representatives]
+  \label{ch30corollary}
+  Suppose the sets $A_1, \dots, A_n$ all have size $k \ge 1$ and suppose further that no element
+  is contained in more than $k$ sets. Then there exist $k$ SDR's such that for any $i$ the $k$
+  representatives of $A_i$ are distinct and thus together form the set $A_i$.
+\end{corollary}
