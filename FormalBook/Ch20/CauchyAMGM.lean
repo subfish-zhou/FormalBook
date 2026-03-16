@@ -12,6 +12,7 @@ open Classical
 lemma cauchy_amgm_base (a b : ℝ) :
     a * b ≤ ((a + b) / 2) ^ 2 := by nlinarith [sq_nonneg (a - b)]
 
+/-- The Cauchy AM-GM induction predicate: for n values, the product is at most (sum/n)^n. -/
 def CauchyAMGM (n : ℕ) : Prop :=
   ∀ (a : Fin n → ℝ), (∀ i, 0 ≤ a i) → ∏ i, a i ≤ ((∑ i, a i) / n) ^ n
 
@@ -102,7 +103,7 @@ lemma cauchy_amgm (n : ℕ) (hn : 0 < n) : CauchyAMGM n := by
     (by convert cauchy_amgm_pow2 k hk using 1; omega)
 
 set_option maxHeartbeats 1600000 in
-lemma cauchy_amgm_fintype {α : Type*} [Fintype α] [DecidableEq α]
+lemma cauchy_amgm_fintype {α : Type*} [Fintype α]
     (hcard : 0 < Fintype.card α)
     (a : α → ℝ) (hpos : ∀ i, 0 ≤ a i) :
     ∏ i, a i ≤ ((∑ i, a i) / Fintype.card α) ^ Fintype.card α := by

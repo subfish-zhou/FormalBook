@@ -1014,8 +1014,9 @@ theorem erdos_gallai_A_ge_two_thirds_T {m n : ℕ}
     (A : ℝ)
     -- The integral layer hypothesis: A ≥ (4/3) · C
     (hA : A ≥ 4 / 3 * Real.sqrt (erdos_gallai_C_sq α β))
-    -- Non-degeneracy: f'(1) ≠ f'(-1)
-    (_hne : erdos_gallai_deriv_at_one α β ≠ erdos_gallai_deriv_at_neg_one α β) :
+    -- Note: The tex also assumes f'(1) ≠ f'(-1) (non-degeneracy), but the proof
+    -- doesn't need it — the inequality A ≥ (2/3)T holds regardless.
+    :
     A ≥ 2 / 3 * erdos_gallai_T α β := by
   -- Abbreviate
   let f1 := erdos_gallai_deriv_at_one α β
@@ -1084,13 +1085,13 @@ theorem erdos_gallai_A_ge_two_thirds_T {m n : ℕ}
       linarith
 
 /-- The full Erdős–Gallai theorem without the integral hypothesis.
-    A ≥ (2/3) T where A is the actual integral area. -/
+    A ≥ (2/3) T where A is the actual integral area.
+    Note: The tex assumes f'(1) ≠ f'(-1) but the inequality holds unconditionally. -/
 theorem erdos_gallai_full {m n : ℕ}
     (α : Fin m → ℝ) (β : Fin n → ℝ)
-    (hα : ∀ i, 1 ≤ α i) (hβ : ∀ j, 1 ≤ β j)
-    (hne : erdos_gallai_deriv_at_one α β ≠ erdos_gallai_deriv_at_neg_one α β) :
+    (hα : ∀ i, 1 ≤ α i) (hβ : ∀ j, 1 ≤ β j) :
     erdos_gallai_area α β ≥ 2 / 3 * erdos_gallai_T α β :=
   erdos_gallai_A_ge_two_thirds_T α β hα hβ
-    (erdos_gallai_area α β) (erdos_gallai_integral_bound α β hα hβ) hne
+    (erdos_gallai_area α β) (erdos_gallai_integral_bound α β hα hβ)
 
 end ErdosGallai

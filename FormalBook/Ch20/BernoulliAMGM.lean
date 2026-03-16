@@ -57,7 +57,7 @@ lemma amgm_bernoulli (n : ℕ) (hn : 0 < n) (a : Fin n → ℝ) (hpos : ∀ i, 0
 
 set_option maxHeartbeats 3200000 in
 /-- AM-GM for general Fintype, via Bernoulli induction. -/
-lemma amgm_bernoulli_fintype {α : Type*} [Fintype α] [DecidableEq α]
+lemma amgm_bernoulli_fintype {α : Type*} [Fintype α]
     (hcard : 0 < Fintype.card α)
     (a : α → ℝ) (hpos : ∀ i, 0 < a i) :
     ∏ i, a i ≤ ((∑ i, a i) / Fintype.card α) ^ Fintype.card α := by

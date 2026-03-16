@@ -154,8 +154,8 @@ theorem erdos_gallai_f_nonneg {m n : ℕ} (α : Fin m → ℝ) (β : Fin n → �
     · exact Finset.prod_nonneg fun i _ => by nlinarith [hα i, hx.2]
   · exact Finset.prod_nonneg fun j _ => by nlinarith [hβ j, hx.1]
 
-/-- For x ∈ [-1, 1] and αᵢ ≥ 1: αᵢ² - x² ≥ αᵢ² - 1. -/
-theorem sq_sub_sq_ge {a x : ℝ} (_ha : 1 ≤ a) (hx : x ∈ Set.Icc (-1 : ℝ) 1) :
+/-- For x ∈ [-1, 1]: a² - x² ≥ a² - 1. The hypothesis a ≥ 1 from the tex is not needed. -/
+theorem sq_sub_sq_ge {a x : ℝ} (hx : x ∈ Set.Icc (-1 : ℝ) 1) :
     a ^ 2 - 1 ≤ a ^ 2 - x ^ 2 := by
   nlinarith [hx.1, hx.2]
 
@@ -174,11 +174,11 @@ theorem erdos_gallai_f_mul_neg_ge {m n : ℕ} (α : Fin m → ℝ) (β : Fin n �
   · apply mul_le_mul_of_nonneg_left
     · apply Finset.prod_le_prod
       · intro i _; nlinarith [hα i]
-      · intro i _; exact sq_sub_sq_ge (hα i) hx
+      · intro i _; exact sq_sub_sq_ge hx
     · exact sq_nonneg _
   · apply Finset.prod_le_prod
     · intro j _; nlinarith [hβ j]
-    · intro j _; exact sq_sub_sq_ge (hβ j) hx
+    · intro j _; exact sq_sub_sq_ge hx
   · exact Finset.prod_nonneg fun j _ => by nlinarith [hβ j]
   · apply mul_nonneg (sq_nonneg _)
     exact Finset.prod_nonneg fun i _ => by nlinarith [hα i, hx.1, hx.2]
