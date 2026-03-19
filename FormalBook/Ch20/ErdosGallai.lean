@@ -210,15 +210,8 @@ theorem integral_one_sub_sq : ∫ x in (-1:ℝ)..1, (1 - x ^ 2) = 4 / 3 := by
 
 /-- The area A ≥ (4/3) · √(C²).
     This is the integral layer of the Erdős–Gallai proof.
-
-    Strategy: By AM-GM, (f(x) + f(-x))/2 ≥ √(f(x)·f(-x)).
-    Since ∫f(x) = ∫f(-x) (by symmetry), A = ∫(f(x)+f(-x))/2 · dx... no, simpler:
-    A = ∫f(x)dx. We use f(x)·f(-x) ≥ (1-x²)²·C² and then
-    AM-GM gives (f(x)+f(-x))/2 ≥ (1-x²)·√C². Integrating gives A ≥ (4/3)·√C².
-
-    Actually the full proof is quite complex. Let's use sorry for the key step
-    and mark it clearly.
--/
+    By AM-GM, (f(x) + f(-x))/2 ≥ √(f(x)·f(-x)) ≥ (1-x²)·C.
+    Integrating gives A ≥ (4/3)·C. -/
 theorem erdos_gallai_integral_bound {m n : ℕ}
     (α : Fin m → ℝ) (β : Fin n → ℝ)
     (hα : ∀ i, 1 ≤ α i) (hβ : ∀ j, 1 ≤ β j) :

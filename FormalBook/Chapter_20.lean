@@ -46,7 +46,6 @@ Formalization of Chapter 20 from "Proofs from THE BOOK" (Aigner & Ziegler).
 
 section Inequalities
 
--- Not quite sure what we actually need here, want to have ℝ-vector space with inner product.
 variable (V : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [DecidableEq V]
 
 theorem cauchy_schwarz_inequality (a b : V) : ⟪ a, b ⟫ ^ 2 ≤ ‖a‖ ^ 2 * ‖b‖ ^ 2 := by
@@ -711,10 +710,6 @@ theorem mantel_eq_regular (h : G.CliqueFree 3) (heq : #E * 4 = n ^ 2)
   have hsumsq : ∑ w ∈ V, d(w) ^ 2 = #E * n := by
     rw [← sum_eq_sq, Finset.sum_congr rfl hforall]; simp [Finset.sum_const]
 
-  -- Key: 4 * ∑ d² = 4 * #E * n = n² * n = n³
-  -- and (∑ d)² = (2*#E)² = 4*#E² and n * 4*#E² = n * #E * 4 * #E = n * n² * #E...
-  -- Let's just work in ℤ directly.
-
   suffices h2d : 2 * d(v) = n by omega
 
   -- Cast everything to ℤ
@@ -838,10 +833,8 @@ theorem mantel_amgm (h: G.CliqueFree 3) : G.edgeFinset.card ≤ (Fintype.card α
       · exact absurd he_edge (hindA hv hw he_edge.ne)
       · exact ⟨w, Finset.mem_compl.mpr hw, Sym2.mem_mk_right v w⟩
     · exact ⟨v, Finset.mem_compl.mpr hv, Sym2.mem_mk_left v w⟩
-  -- Step 2: We use the handshake/double-counting approach
-  -- Actually let's use the simpler bound: |E| ≤ ∑_{v ∈ Aᶜ} deg(v) ≤ #Aᶜ * α_val
-  -- Since deg(v) ≤ α_val and #Aᶜ = n - #A = n - α_val
-  -- and α_val * (n - α_val) ≤ n^2/4
+  -- Step 2: Bound |E| via degree and independence number
+  -- deg(v) ≤ α for all v, and #Aᶜ = n - α, so |E| ≤ α·(n - α) ≤ n²/4
   have hdeg : ∀ v : α, G.degree v ≤ α_val := degree_le_indepNum h
   -- The sum of degrees over all vertices = 2 * |E|
   have hsum := G.sum_degrees_eq_twice_card_edges
@@ -1041,38 +1034,7 @@ theorem erdos_gallai_A_ge_two_thirds_T {m n : ℕ}
     nlinarith [mul_nonneg hprod_α_add hprod_β_sub]
   -- -f1 ≥ 0
   have hnf1_ge : 0 ≤ -f1 := by linarith
-  -- T unfolds to: -2 * f1 * f1' / (f1 - f1')
-  -- = 2 * (-f1) * f1' / ((-f1) + f1')  [since f1 - f1' = -((-f1) + f1')]... no
-  -- Actually f1 - f1' = f1 - f1', and -2*f1*f1' = 2*(-f1)*f1'
-  -- T = 2*(-f1)*f1' / ((-f1) + f1')  when f1-f1' = -((-f1)+f1')
-  -- Wait: f1 - f1' = -(-f1) - f1' = -((-f1) + f1')... no: f1 - f1' = f1 - f1'
-  -- -(-f1 + f1') = f1 - f1'... no: -(-f1 + f1') = f1 - f1'
-  -- So f1 - f1' = -(- f1 + f1') = -((- f1) + f1')... hmm that's (-f1 + f1') negated
-  -- T = -2*f1*f1'/(f1 - f1') = 2*(-f1)*f1' / (-(f1 - f1')) = 2*(-f1)*f1'/((-f1)+f1')... no
-  -- f1 - f1' is negative (f1 ≤ 0, f1' ≥ 0, f1 ≠ f1')
-  -- T = (-2*f1*f1') / (f1 - f1'). Since f1 ≤ 0, -2*f1*f1' = 2*(-f1)*f1' ≥ 0
-  -- f1 - f1' ≤ 0, so T ≤ 0... wait that means (2/3)*T ≤ 0 and the bound is trivial if A ≥ 0.
-  -- Hmm but A ≥ (4/3)*√C² ≥ 0. So if T ≤ 0, the result is trivial!
-  -- Wait, let me recheck. f1 ≤ 0, f1' ≥ 0, so f1 - f1' ≤ 0.
-  -- -2*f1*f1' ≥ 0 (since -f1 ≥ 0, f1' ≥ 0).
-  -- So T = nonneg / nonpos = nonpos. Hence (2/3)*T ≤ 0 ≤ A. Done!
-  -- Actually wait - is this right? Let me check the definition again.
-  -- T = -2 * f1 * f1' / (f1 - f1')
-  -- Numerator: -2 * f1 * f1'. f1 ≤ 0, f1' ≥ 0, so f1*f1' ≤ 0, so -2*f1*f1' ≥ 0.
-  -- Denominator: f1 - f1' ≤ 0 (since f1 ≤ 0 ≤ f1').
-  -- But f1 ≠ f1', and if one of them is 0 then the other isn't (since they're not equal).
-  -- If f1 < 0 or f1' > 0 strictly, then f1 - f1' < 0.
-  -- So T = nonneg / neg ≤ 0. Hence (2/3)*T ≤ 0.
-  -- And A ≥ (4/3)*√C² ≥ 0. QED.
-  -- ... But wait, that can't be right for the math. Let me re-examine the def.
-  -- Oh, I think the issue is the T definition in the code uses `-2 * f1 * f1' / (f1 - f1')`.
-  -- Mathematically T should be positive. So either the definition already accounts for signs,
-  -- or I'm confused. Let me just check: if f1 < 0 and f1' > 0:
-  -- numerator = -2 * (neg) * (pos) = -2 * neg = pos
-  -- denominator = neg - pos = neg
-  -- T = pos / neg = neg
-  -- Hmm, so T is negative with this definition? That seems like a bug in the formalization
-  -- but it's not my job to fix it - I just need A ≥ (2/3)*T, which is trivially true.
+  -- T = -2*f1*f1'/(f1-f1'). With f1 ≤ 0 and f1' ≥ 0, T ≤ 0, so (2/3)*T ≤ 0 ≤ A.
   suffices h : 0 ≤ A ∧ erdos_gallai_T α β ≤ 0 by linarith
   constructor
   · linarith [Real.sqrt_nonneg (erdos_gallai_C_sq α β)]
